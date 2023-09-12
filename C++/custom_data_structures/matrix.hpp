@@ -84,8 +84,7 @@ public:
 				result.elements[i][j] = 0;
 
 				for (size_t k = 0; k < this->column; k++) {
-					result.elements[i][j] += (this->elements[i][k] * other.elements[k][j] % static_cast<T>(1000));
-					result.elements[i][j] %= static_cast<T>(1000);
+					result.elements[i][j] += this->elements[i][k] * other.elements[k][j];
 				}
 			}
 		}
