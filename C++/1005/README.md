@@ -1,0 +1,1 @@
+[Detailed review of the Baekjoon 1005 problem](https://choicube84.github.io/study/2024/01/15/baekjoon_1005.html)
