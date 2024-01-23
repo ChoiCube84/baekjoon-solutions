@@ -26,6 +26,17 @@ public:
 		return *this;
 	}
 
+	GeometricLine& update(const std::pair<T, T>& newStart, const std::pair<T, T>& newEnd) {
+		this->start = newStart;
+		this->end = newEnd;
+		
+		if (this->start > this->end) {
+		    swap(this->end, this->start);
+		}
+		
+		return *this;
+	}
+
 	T getCCW(const std::pair<T, T>& target) const {
 		return (end.first - start.first) * (target.second - start.second) - (end.second - start.second) * (target.first - start.first);
 	}
