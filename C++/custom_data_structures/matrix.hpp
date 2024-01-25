@@ -9,7 +9,7 @@ private:
 	size_t row;
 	size_t column;
 
-    T mod;
+	T mod;
 
 	T** elements;
 public:
@@ -68,7 +68,7 @@ public:
 		row = other.row;
 		column = other.column;
 
-		elements = new T*[row];
+		elements = new T * [row];
 		for (size_t i = 0; i < row; i++) {
 			elements[i] = new T[column];
 
@@ -88,20 +88,20 @@ public:
 				result.elements[i][j] = 0;
 
 				for (size_t k = 0; k < this->column; k++) {
-                    T product;
+					T product;
 
-                    if (mod != 0) {
-                        product = (this->elements[i][k] * other.elements[k][j]) % mod;
-                    }
-                    else {
-                        product = this->elements[i][k] * other.elements[k][j];
-                    }
+					if (mod != 0) {
+						product = (this->elements[i][k] * other.elements[k][j]) % mod;
+					}
+					else {
+						product = this->elements[i][k] * other.elements[k][j];
+					}
 
 					result.elements[i][j] += product;
 
-                    if (mod != 0) {
-                        result.elements[i][j] %= mod;
-                    }
+					if (mod != 0) {
+						result.elements[i][j] %= mod;
+					}
 				}
 			}
 		}
