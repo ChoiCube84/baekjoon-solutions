@@ -4,6 +4,7 @@
 #include <stack>
 #include <string>
 #include <sstream>
+#include <vector>
 
 template <typename T>
 class BinarySearchTree {
@@ -13,49 +14,104 @@ private:
 		Node* right;
 		T value;
 
-		Node(const T& value) : left(nullptr), right(nullptr), value(value) {}
+		Node() : left(nullptr), right(nullptr), value(static_cast<T>(0)) {}
+		explicit Node(const T& value) : left(nullptr), right(nullptr), value(value) {}
 	};
 
 	Node* head;
 
-	void preOrder(Node* currentNode, std::ostringstream& oss, const char& separator) {
-		oss << currentNode->value << separator;
+	Node* construct(const std::vector<T>& postOrder, const std::vector<T>& inOrder, size_t start, size_t end) {
+		if (start > end) {
+			return nullptr;
+		}
+
+		size_t leftEnd = end;
+		Node* curr = new Node(postOrder[end]);
+
+		if (start == end) {
+			return curr;
+		}
+
+		while (start < leftEnd && postOrder[leftEnd] >= curr->value) {
+			leftEnd--;
+		}
+
+		if (postOrder[leftEnd] < curr->value) {
+			curr->left = construct(postOrder, inOrder, start, leftEnd);
+			curr->right = construct(postOrder, inOrder, leftEnd + 1, end - 1);
+		}
+		else {
+			curr->left = nullptr;
+			curr->right = construct(postOrder, inOrder, leftEnd, end - 1);
+		}
+
+		return curr;
+	}
+
+	void preOrder(Node* currentNode, std::vector<T>& result) {
+		result.emplace_back(currentNode->value);
 
 		if (currentNode->left != nullptr) {
-			preOrder(currentNode->left, oss, separator);
+			preOrder(currentNode->left, result);
 		}
 
 		if (currentNode->right != nullptr) {
-			preOrder(currentNode->right, oss, separator);
+			preOrder(currentNode->right, result);
 		}
 	}
 
-	void inOrder(Node* currentNode, std::ostringstream& oss, const char& separator) {
+	void inOrder(Node* currentNode, std::vector<T>& result) {
 		if (currentNode->left != nullptr) {
-			inOrder(currentNode->left, oss, separator);
+			inOrder(currentNode->left, result);
 		}
 
-		oss << currentNode->value << separator;
+		result.emplace_back(currentNode->value);
 
 		if (currentNode->right != nullptr) {
-			inOrder(currentNode->right, oss, separator);
+			inOrder(currentNode->right, result);
 		}
 	}
 
-	void postOrder(Node* currentNode, std::ostringstream& oss, const char& separator) {
+	void postOrder(Node* currentNode, std::vector<T>& result) {
 		if (currentNode->left != nullptr) {
-			postOrder(currentNode->left, oss, separator);
+			postOrder(currentNode->left, result);
 		}
 
 		if (currentNode->right != nullptr) {
-			postOrder(currentNode->right, oss, separator);
+			postOrder(currentNode->right, result);
 		}
 
-		oss << currentNode->value << separator;
+		result.emplace_back(currentNode->value);
 	}
 
 public:
 	BinarySearchTree() : head(nullptr) {}
+
+	BinarySearchTree(const std::vector<T>& postOrder, const std::vector<T>& inOrder) : head(nullptr) {
+		if (postOrder.size() != inOrder.size() || postOrder.empty()) {
+			return;
+		}
+		else if (postOrder.size() == 1) {
+			head = new Node(postOrder[0]);
+			return;
+		}
+
+		size_t leftEnd = postOrder.size() - 1;
+		head = new Node(postOrder.back());
+
+		while (leftEnd > 0 && postOrder[leftEnd] >= head->value) {
+			leftEnd--;
+		}
+
+		if (postOrder[leftEnd] < head->value) {
+			head->left = construct(postOrder, inOrder, 0, leftEnd);
+			head->right = construct(postOrder, inOrder, leftEnd + 1, postOrder.size() - 2);
+		}
+		else {
+			head->left = nullptr;
+			head->right = construct(postOrder, inOrder, leftEnd, postOrder.size() - 2);
+		}
+	}
 
 	~BinarySearchTree() {
 		if (head != nullptr) {
@@ -127,45 +183,33 @@ public:
 		return false;
 	}
 
-	std::string preOrder(const char& separator = ' ') {
-		std::ostringstream oss;
+	std::vector<T> preOrder() {
+		std::vector<T> result;
 
 		if (head != nullptr) {
-			preOrder(head, oss, separator);
+			preOrder(head, result);
 		}
 
-		std::string result = std::move(oss).str();
-		if (!result.empty()) {
-			result.pop_back();
-		}
 		return result;
 	}
 
-	std::string inOrder(const char& separator = ' ') {
-		std::ostringstream oss;
+	std::vector<T> inOrder() {
+		std::vector<T> result;
 
 		if (head != nullptr) {
-			inOrder(head, oss, separator);
+			inOrder(head, result);
 		}
 
-		std::string result = std::move(oss).str();
-		if (!result.empty()) {
-			result.pop_back();
-		}
 		return result;
 	}
 
-	std::string postOrder(const char& separator = ' ') {
-		std::ostringstream oss;
+	std::vector<T> postOrder() {
+		std::vector<T> result;
 
 		if (head != nullptr) {
-			postOrder(head, oss, separator);
+			postOrder(head, result);
 		}
 
-		std::string result = std::move(oss).str();
-		if (!result.empty()) {
-			result.pop_back();
-		}
 		return result;
 	}
 };
