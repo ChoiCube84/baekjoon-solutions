@@ -9,12 +9,13 @@ private:
     std::vector<int> rank;
 
 public:
-    DisjointSet(int n) {
+    DisjointSet(int n, int order = 0) {
         parent.resize(n);
         rank.resize(n, 0);
 
         for (int i = 0; i < n; i++) {
             parent[i] = i;
+            rank[i] = i * order;
         }
     }
 
