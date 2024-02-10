@@ -5,38 +5,73 @@
 #include <vector>
 
 struct TrieNode {
-	bool endOfWord;
-	int next[26];
-	int nextLetters;
+    bool endOfWord;
+    std::vector<int> next;
+    int nextLetters;
 
-	TrieNode() : endOfWord(false), nextLetters(0) {
-		for (int i = 0; i < 26; i++) {
-			next[i] = -1;
-		}
-	}
+    TrieNode() : endOfWord(false), nextLetters(0) {
+        next.resize(26, -1);
+    }
 };
 
 struct Trie {
-	std::vector<TrieNode> nodes;
+    std::vector<TrieNode> nodes;
 
-	Trie() {
-		nodes.push_back(TrieNode());
-	}
+    Trie() {
+        nodes.emplace_back();
+    }
 
-	void add(const std::string& stringToAdd) {
-		int currentNode = 0;
-		for (char c : stringToAdd) {
-			int idx = c - 'a';
-			if (nodes[currentNode].next[idx] == -1) {
-				nodes[currentNode].nextLetters++;
+    void insert(const std::string& str) {
+        int curr = 0;
+        for (char c : str) {
+            int idx = c - 'a';
+            if (nodes[curr].next[idx] == -1) {
+                nodes[curr].nextLetters++;
 
-				nodes[currentNode].next[idx] = nodes.size();
-				nodes.push_back(TrieNode());
-			}
-			currentNode = nodes[currentNode].next[idx];
-		}
-		nodes[currentNode].endOfWord = true;
-	}
+                nodes[curr].next[idx] = nodes.size();
+                nodes.emplace_back();
+            }
+            curr = nodes[curr].next[idx];
+        }
+        nodes[curr].endOfWord = true;
+    }
+
+    bool find(const std::string& str) {
+        int curr = 0;
+        for (char c : str) {
+            int idx = c - 'a';
+
+            if (nodes[curr].next[idx] == -1) {
+                return false;
+            }
+            else {
+                curr = nodes[curr].next[idx];
+            }
+        }
+        return nodes[curr].endOfWord;
+    }
+
+    std::vector<int> prefixSearch(const std::string& str) {
+        int curr = 0;
+        std::vector<int> result;
+
+        for (int i = 0; i < str.size(); i++) {
+            int idx = str[i] - 'a';
+
+            if (nodes[curr].endOfWord) {
+                result.emplace_back(i);
+            }
+
+            if (nodes[curr].next[idx] == -1) {
+                return result;
+            }
+            else {
+                curr = nodes[curr].next[idx];
+            }
+        }
+
+        return result;
+    }
 };
 
 #endif // !__TRIE_HPP__
