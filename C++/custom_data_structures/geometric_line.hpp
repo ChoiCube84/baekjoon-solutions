@@ -11,11 +11,7 @@ private:
 public:
 	GeometricLine() : start(std::make_pair(0, 0)), end(std::make_pair(0, 0)) {}
 
-	GeometricLine(const std::pair<T, T>& start, const std::pair<T, T>& end) : start(start), end(end) {
-		if (this->start > this->end) {
-			swap(this->end, this->start);
-		}
-	}
+	GeometricLine(const std::pair<T, T>& start, const std::pair<T, T>& end) : start(start), end(end) {}
 
 	GeometricLine& operator=(const GeometricLine& other) {
 		this->start.first = other.start.first;
@@ -29,10 +25,6 @@ public:
 	GeometricLine& update(const std::pair<T, T>& newStart, const std::pair<T, T>& newEnd) {
 		this->start = newStart;
 		this->end = newEnd;
-		
-		if (this->start > this->end) {
-		    swap(this->end, this->start);
-		}
 		
 		return *this;
 	}
@@ -64,6 +56,13 @@ public:
 
 	const std::pair<T, T>& getEnd(void) const {
 		return end;
+	}
+	
+	T lengthSquare(void) const {
+	    T dx = end.first - start.first;
+	    T dy = end.second - start.second;
+	        
+	    return dx * dx + dy * dy;
 	}
 };
 
