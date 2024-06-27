@@ -21,21 +21,21 @@ int main(void) {
 
     int horizontalCount = INT_MAX;
 
-    vector<int> centerCandidate(26, 0);
+    vector<int> centerCandidate(27, 0);
     for (int i=2; i<4; i++) {
         for (int j=0; j<9; j++) {
             centerCandidate[flag[i][j] - 'A']++;
         }
     }
 
-    for (int c=0; c<26; c++) {
-        if (centerCandidate[c] == 0) {
+    for (int c=0; c<27; c++) {
+        if (centerCandidate[c] == 0 && c != 26) {
             continue;
         }
 
         int tempHorizontalCount = 18 - centerCandidate[c];
 
-        vector<int> letterCount(26, 0);
+        vector<int> letterCount(27, 0);
         int best = 0;
 
         for (int i=0; i<2; i++) {
@@ -49,7 +49,7 @@ int main(void) {
 
         tempHorizontalCount += (18 - best);
 
-        for (int i=0; i<26; i++) {
+        for (int i=0; i<27; i++) {
             letterCount[i] = 0;
         }
         best = 0;
@@ -70,7 +70,7 @@ int main(void) {
 
     int verticalCount = INT_MAX;
 
-    for (int i=0; i<26; i++) {
+    for (int i=0; i<27; i++) {
         centerCandidate[i] = 0;
     }
 
@@ -80,14 +80,14 @@ int main(void) {
         }
     }
 
-    for (int c=0; c<26; c++) {
-        if (centerCandidate[c] == 0) {
+    for (int c=0; c<27; c++) {
+        if (centerCandidate[c] == 0 && c != 26) {
             continue;
         }
 
         int tempVerticalCount = 18 - centerCandidate[c];
 
-        vector<int> letterCount(26, 0);
+        vector<int> letterCount(27, 0);
         int best = 0;
 
         for (int i=0; i<6; i++) {
@@ -101,7 +101,7 @@ int main(void) {
 
         tempVerticalCount += (18 - best);
 
-        for (int i=0; i<26; i++) {
+        for (int i=0; i<27; i++) {
             letterCount[i] = 0;
         }
         best = 0;
@@ -119,8 +119,6 @@ int main(void) {
 
         verticalCount = min(verticalCount, tempVerticalCount);
     }
-
-    cout << horizontalCount << "\n" << verticalCount << "\n";
 
     cout << min(horizontalCount, verticalCount);
 
