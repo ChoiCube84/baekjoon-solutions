@@ -3,8 +3,9 @@
 using namespace std;
 using namespace __gnu_pbds;
 
+int countFire(const vector<int>& F);
 void fireWeakening(vector<int>& F, int fixedIndex);
-int possibleCases(vector<int>& F, int W, int T, int K, int prevW, int currentTime);
+int possibleCases(vector<int> F, int W, int T, int K, int prevW, int currentTime);
 
 int main(void) {
     ios_base::sync_with_stdio(false);
@@ -19,98 +20,53 @@ int main(void) {
         cin >> F[i];
     }
 
-    cout << "Initial state: " << endl;
-    cout << "N: " << N << ", W: " << W << ", T: " << T << ", K: " << K << endl;
-    cout << "Initial fire strengths: ";
-    for (auto f : F) cout << f << " ";
-    cout << endl;
-
-    if (T == 1) {
-        cout << possibleCases(F, W, T, K, -1, 1) << endl;
-    } 
-    else {
-        int left = possibleCases(F, W - 1, T, K, -1, 1);
-        int middle = possibleCases(F, W, T, K, -1, 1);
-        int right = possibleCases(F, W + 1, T, K, -1, 1);
-
-        cout << left + middle + right << endl;
-    }
+    cout << possibleCases(F, W, T, K, -1, 1);
 
     return 0;
 }
 
 void fireWeakening(vector<int>& F, int fixedIndex) {
     int N = F.size();
-    vector<int> newF = F;
+    vector<int> decrease(N, 0);
 
-    if (N > 1) {
-        if (fixedIndex != 0) {
-            newF[0] -= 3;
-            newF[0] += (F[1] > 0);
-            newF[0] = max(0, newF[0]);
-        }
-        for (int i = 1; i < N - 1; i++) {
-            if (fixedIndex == i) {
-                continue;
+    for (int i=0; i<N; i++) {
+        if (F[i] > 0 && i != fixedIndex) {
+            decrease[i] = 3;
+            if (i>0 && F[i-1] > 0) {
+                decrease[i]--;
             }
-            newF[i] -= 3;
-            newF[i] += ((F[i - 1] > 0) + (F[i + 1] > 0));
-            newF[i] = max(0, newF[i]);
-        }
-        if (fixedIndex != N - 1) {
-            newF[N - 1] -= 3;
-            newF[N - 1] += (F[N - 2] > 0);
-            newF[N - 1] = max(0, newF[N - 1]);
-        }
-    } 
-    else {
-        if (fixedIndex != 0) {
-            newF[0] -= 3;
-            newF[0] = max(0, newF[0]);
+            if (i<N-1 && F[i+1] > 0) {
+                decrease[i]--;
+            }
         }
     }
 
-    cout << "Fire weakening at time step with fixedIndex " << fixedIndex << ": ";
-    for (auto f : newF) cout << f << " ";
-    cout << endl;
-
-    F = newF;
+    for (int i=0; i<N; i++) {
+        F[i] -= decrease[i];
+        F[i] = max(0, F[i]);
+    }
 }
 
-int possibleCases(vector<int>& F, int W, int T, int K, int prevW, int currentTime) {
-    int N = F.size();
+int countFire(const vector<int>& F) {
+    return count_if(F.begin(), F.end(), [](int f) { return f > 0; });
+}
 
-    cout << "Current time: " << currentTime << ", Position: " << W << ", Fire strengths: ";
-    for (auto f : F) cout << f << " ";
-    cout << endl;
+int possibleCases(vector<int> F, int W, int T, int K, int prevW, int currentTime) {
+    int N = F.size();
 
     fireWeakening(F, prevW);
 
     if (W < 0 || W > N - 1) {
-        cout << "Out of bounds: " << W << endl;
         return 0;
     } 
-    else if (currentTime + 1 == T) {
-        return possibleCases(F, W, T, K, W, currentTime + 1);
-    } 
     else if (currentTime == T) {
-        int alive = 0;
-        for (auto& f : F) {
-            if (f > 0) {
-                alive++;
-            }
-        }
-        cout << "End of time: " << currentTime << ", Alive fires: " << alive << endl;
-        return (alive >= K);
+        int alive = countFire(F);
+        return (alive >= K) ? 1 : 0;
     } 
     else {
-        vector<int> leftF = F;
-        vector<int> middleF = F;
-        vector<int> rightF = F;
-
-        int left = possibleCases(leftF, W - 1, T, K, W, currentTime + 1);
-        int middle = possibleCases(middleF, W, T, K, W, currentTime + 1);
-        int right = possibleCases(rightF, W + 1, T, K, W, currentTime + 1);
+        int left = possibleCases(F, W - 1, T, K, W, currentTime + 1);
+        int middle = possibleCases(F, W, T, K, W, currentTime + 1);
+        int right = possibleCases(F, W + 1, T, K, W, currentTime + 1);
 
         return left + middle + right;
     }
