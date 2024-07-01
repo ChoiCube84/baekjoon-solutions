@@ -20,7 +20,14 @@ int main(void) {
         cin >> F[i];
     }
 
-    cout << possibleCases(F, W, T, K, -1, 1);
+    if (T == 1) {
+        cout << possibleCases(F, W, T, K, -1, 1);
+    }
+    else {
+        cout << possibleCases(F, W-1, T, K, -1, 1) 
+            + possibleCases(F, W, T, K, -1, 1) 
+            + possibleCases(F, W+1, T, K, -1, 1);
+    }
 
     return 0;
 }
@@ -62,7 +69,10 @@ int possibleCases(vector<int> F, int W, int T, int K, int prevW, int currentTime
     else if (currentTime == T) {
         int alive = countFire(F);
         return (alive >= K) ? 1 : 0;
-    } 
+    }
+    else if (currentTime == T - 1) {
+        return possibleCases(F, W, T, K, prevW, currentTime + 1);
+    }
     else {
         int left = possibleCases(F, W - 1, T, K, W, currentTime + 1);
         int middle = possibleCases(F, W, T, K, W, currentTime + 1);
