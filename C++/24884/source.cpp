@@ -5,14 +5,14 @@ using namespace __gnu_pbds;
 
 int countFire(const vector<int>& F);
 void fireWeakening(vector<int>& F, int fixedIndex);
-int possibleCases(vector<int> F, int W, int T, int K, int prevW, int currentTime);
+void search(vector<int> F, int W, int T, int K, int fixedIndex, int currentTime, int& result);
 
 int main(void) {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
     cout.tie(nullptr);
 
-    int N, W, T, K;
+    int N, W, T, K, result = 0;
     cin >> N >> W >> T >> K;
 
     vector<int> F(N, 0);
@@ -20,14 +20,9 @@ int main(void) {
         cin >> F[i];
     }
 
-    if (T == 1) {
-        cout << possibleCases(F, W, T, K, -1, 1);
-    }
-    else {
-        cout << possibleCases(F, W-1, T, K, -1, 1) 
-            + possibleCases(F, W, T, K, -1, 1) 
-            + possibleCases(F, W+1, T, K, -1, 1);
-    }
+    search(F, W, T, K, -1, 1, result);
+
+    cout << result;
 
     return 0;
 }
@@ -58,26 +53,19 @@ int countFire(const vector<int>& F) {
     return count_if(F.begin(), F.end(), [](int f) { return f > 0; });
 }
 
-int possibleCases(vector<int> F, int W, int T, int K, int prevW, int currentTime) {
+void search(vector<int> F, int W, int T, int K, int fixedIndex, int currentTime, int& result) {
     int N = F.size();
 
-    fireWeakening(F, prevW);
+    fireWeakening(F, fixedIndex);
 
-    if (W < 0 || W > N - 1) {
-        return 0;
-    } 
-    else if (currentTime == T) {
-        int alive = countFire(F);
-        return (alive >= K) ? 1 : 0;
-    }
-    else if (currentTime == T - 1) {
-        return possibleCases(F, W, T, K, prevW, currentTime + 1);
+    if (currentTime == T) {
+        if (countFire(F) >= K) {
+            result++;
+        }
     }
     else {
-        int left = possibleCases(F, W - 1, T, K, W, currentTime + 1);
-        int middle = possibleCases(F, W, T, K, W, currentTime + 1);
-        int right = possibleCases(F, W + 1, T, K, W, currentTime + 1);
-
-        return left + middle + right;
+        for (int newW = max(0, W-1); newW <= min(N-1, W+1); newW++) {
+            search(F, newW, T, K, newW, currentTime + 1, result);
+        }
     }
 }
