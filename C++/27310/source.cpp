@@ -13,18 +13,21 @@ int main(void) {
     cin.tie(nullptr);
     cout.tie(nullptr);
 
-    string dna;
-    cin >> dna;
+    string name;
+    cin >> name;
 
-    int n = dna.size();
+    int result = name.length();
 
-    vector<vector<int>> dp(n, vector<int>(n, 0));
-
-    for (int end=1; end<n; end++) {
-        for (int start=end-1; start>=0; start--) {
-            // Lorem ipsum
+    for (char c : name) {
+        if (c == ':') {
+            result++;
+        }
+        else if (c == '_') {
+            result += 5;
         }
     }
 
+    cout << result;
+    
     return 0;
 }
