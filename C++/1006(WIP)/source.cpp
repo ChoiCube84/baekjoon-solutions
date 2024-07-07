@@ -5,7 +5,13 @@
 #define DOWN_OCCUPIED 2
 #define BOTH_OCCUPIED 3
 
+using namespace __gnu_pbds;
 using namespace std;
+
+using ll = long long int;
+using ull = unsigned long long int;
+
+using pll = pair<ll, ll>;
 
 void simulate(void);
 
@@ -28,15 +34,14 @@ void simulate(void) {
     int N, W, result = INT_MAX;
     cin >> N >> W;
 
-    vector<int> enemy[2];
-    enemy[0].resize(N);
-    enemy[1].resize(N);
+    vector<pll> enemy;
+    enemy.resize(N);
 
     for (int i=0; i<N; i++) {
-        cin >> enemy[0][i];
+        cin >> enemy[i].first;
     }
     for (int i=0; i<N; i++) {
-        cin >> enemy[1][i];
+        cin >> enemy[i].second;
     }
 
     // First index: Connectedness of Start and End
@@ -51,7 +56,7 @@ void simulate(void) {
             dp[option][NONE_OCCUPIED][0] = 2;
             dp[option][UP_OCCUPIED][0] = 2;
             dp[option][DOWN_OCCUPIED][0] = 2;
-            dp[option][BOTH_OCCUPIED][0] = 1 + (enemy[0][0] + enemy[1][0] > W);
+            dp[option][BOTH_OCCUPIED][0] = 1 + (enemy[0].first + enemy[0].second > W);
             break;
         case UP_OCCUPIED:
             dp[option][NONE_OCCUPIED][0] = 3;
@@ -73,7 +78,10 @@ void simulate(void) {
             break;
         }
 
-        for (int i=1; i<N; i++) {
+    }
+
+    for (int i=1; i<N; i++) {
+        for (int option=0; option<4; option++) {
             dp[option][NONE_OCCUPIED][i] = 2 + min({
                 dp[option][NONE_OCCUPIED][i-1],
                 dp[option][UP_OCCUPIED][i-1],
@@ -81,25 +89,27 @@ void simulate(void) {
                 dp[option][BOTH_OCCUPIED][i-1]
             });
 
-            dp[option][UP_OCCUPIED][0] = 1 + min({
-                dp[option][NONE_OCCUPIED][i-1] + (enemy[0][i-1] + enemy[0][i] > W),
-                dp[option][DOWN_OCCUPIED][i-1] + (enemy[0][i-1] + enemy[0][i] > W)
+            dp[option][UP_OCCUPIED][i] = 1 + min({
+                dp[option][NONE_OCCUPIED][i-1] + (enemy[i-1].first + enemy[i].first > W),
+                dp[option][DOWN_OCCUPIED][i-1] + (enemy[i-1].first + enemy[i].second > W)
             });
 
-            dp[option][DOWN_OCCUPIED][0] = 1 + min({
-                dp[option][NONE_OCCUPIED][i-1] + (enemy[1][i-1] + enemy[1][i] > W),
-                dp[option][UP_OCCUPIED][i-1] + (enemy[1][i-1] + enemy[1][i] > W)
+            dp[option][DOWN_OCCUPIED][i] = 1 + min({
+                dp[option][NONE_OCCUPIED][i-1] + (enemy[i-1].second + enemy[i].second > W),
+                dp[option][UP_OCCUPIED][i-1] + (enemy[i-1].second + enemy[i].second > W)
             });
 
-            dp[option][BOTH_OCCUPIED][0] = min({
-                dp[option][NONE_OCCUPIED][i-1] + (enemy[0][i-1] + enemy[0][i] > W) + (enemy[1][i-1] + enemy[1][i] > W),
-                dp[option][NONE_OCCUPIED][i-1] + (enemy[0][i] + enemy[1][i] > W),
-                dp[option][UP_OCCUPIED][i-1] + (enemy[0][i] + enemy[1][i] > W),
-                dp[option][DOWN_OCCUPIED][i-1] + (enemy[0][i] + enemy[1][i] > W),
-                dp[option][BOTH_OCCUPIED][i-1] + (enemy[0][i] + enemy[1][i] > W)
+            dp[option][BOTH_OCCUPIED][i] = min({
+                dp[option][NONE_OCCUPIED][i-1] + (enemy[i-1].first + enemy[i].first > W) + (enemy[i-1].second + enemy[i].second > W),
+                dp[option][NONE_OCCUPIED][i-1] + (enemy[i].first + enemy[i].second > W),
+                dp[option][UP_OCCUPIED][i-1] + (enemy[i].first + enemy[i].second > W),
+                dp[option][DOWN_OCCUPIED][i-1] + (enemy[i].first + enemy[i].second > W),
+                dp[option][BOTH_OCCUPIED][i-1] + (enemy[i].first + enemy[i].second > W)
             });
         }
+    }
 
+    for (int option=0; option<4; option++) {
         switch (option) {
         case NONE_OCCUPIED:
             result = min(result, min({
@@ -111,23 +121,23 @@ void simulate(void) {
             break;
         case UP_OCCUPIED:
             result = min(result, min({
-                dp[option][NONE_OCCUPIED][N-1] - (enemy[0][0] + enemy[0][N-1] <= W),
+                dp[option][NONE_OCCUPIED][N-1] - (enemy[0].first + enemy[N-1].first <= W),
                 dp[option][UP_OCCUPIED][N-1],
-                dp[option][DOWN_OCCUPIED][N-1] - (enemy[0][0] + enemy[0][N-1] <= W),
+                dp[option][DOWN_OCCUPIED][N-1] - (enemy[0].first + enemy[N-1].first <= W),
                 dp[option][BOTH_OCCUPIED][N-1],
             }));
             break;
         case DOWN_OCCUPIED:
             result = min(result, min({
-                dp[option][NONE_OCCUPIED][N-1] - (enemy[1][0] + enemy[1][N-1] <= W),
-                dp[option][UP_OCCUPIED][N-1] - (enemy[1][0] + enemy[1][N-1] <= W),
+                dp[option][NONE_OCCUPIED][N-1] - (enemy[0].second + enemy[N-1].second <= W),
+                dp[option][UP_OCCUPIED][N-1] - (enemy[0].second + enemy[N-1].second <= W),
                 dp[option][DOWN_OCCUPIED][N-1],
                 dp[option][BOTH_OCCUPIED][N-1],
             }));
             break;
         case BOTH_OCCUPIED:
             result = min(result, min({
-                dp[option][NONE_OCCUPIED][N-1] - (enemy[0][0] + enemy[0][N-1] <= W) - (enemy[1][0] + enemy[1][N-1] <= W),
+                dp[option][NONE_OCCUPIED][N-1] - (enemy[0].first + enemy[N-1].first <= W) - (enemy[0].second + enemy[N-1].second <= W),
                 dp[option][UP_OCCUPIED][N-1],
                 dp[option][DOWN_OCCUPIED][N-1],
                 dp[option][BOTH_OCCUPIED][N-1],
@@ -136,5 +146,5 @@ void simulate(void) {
         }
     }
 
-    cout << result << "\n";
+    cout << result << '\n';
 }
