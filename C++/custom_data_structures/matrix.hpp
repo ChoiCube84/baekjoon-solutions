@@ -1,8 +1,6 @@
 #ifndef __MATRIX_HPP__
 #define __MATRIX_HPP__
 
-#include <cstdio>
-
 template <typename T>
 class Matrix {
 private:
@@ -13,20 +11,15 @@ private:
 
 	T** elements;
 public:
-	Matrix(size_t row, size_t column, T mod = 0) : row(row), column(column), mod(mod) {
+	Matrix(size_t row, size_t column, bool identity = false, T mod = 0) : row(row), column(column), mod(mod) {
 		elements = new T * [row];
 
 		for (size_t i = 0; i < row; i++) {
 			elements[i] = new T[column]{};
 		}
-	}
 
-	Matrix(size_t size, bool isIdentity = false, T mod = 0) : row(size), column(size), mod(mod) {
-		elements = new T * [size];
-		for (size_t i = 0; i < size; i++) {
-			elements[i] = new T[size]{};
-
-			if (isIdentity) {
+		if (identity) {
+			for (int i=0; i<row; i++) {
 				elements[i][i] = static_cast<T>(1);
 			}
 		}
@@ -52,6 +45,10 @@ public:
 	}
 
 	T* operator[] (size_t idx) {
+		return elements[idx];
+	}
+
+	const T* operator[] (size_t idx) const {
 		return elements[idx];
 	}
 
@@ -88,13 +85,10 @@ public:
 				result.elements[i][j] = 0;
 
 				for (size_t k = 0; k < this->column; k++) {
-					T product;
+					T product = this->elements[i][k] * other.elements[k][j];
 
 					if (mod != 0) {
-						product = (this->elements[i][k] * other.elements[k][j]) % mod;
-					}
-					else {
-						product = this->elements[i][k] * other.elements[k][j];
+						product %= mod;
 					}
 
 					result.elements[i][j] += product;
@@ -111,7 +105,7 @@ public:
 
 	Matrix power(size_t exponent) {
 		Matrix base(*this);
-		Matrix result(row, true, mod);
+		Matrix result(row, column, true, mod);
 
 		while (exponent > 0) {
 			if (exponent % 2 == 1) {
@@ -124,11 +118,11 @@ public:
 		return result;
 	}
 
-	size_t getRow(void) {
+	const size_t getRow(void) const {
 		return row;
 	}
 
-	size_t getColumn(void) {
+	const size_t getColumn(void) const {
 		return column;
 	}
 };
