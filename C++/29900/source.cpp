@@ -13,17 +13,25 @@ int main(void) {
     cin.tie(nullptr);
     cout.tie(nullptr);
 
-    int N;
+    ull N;
     cin >> N;
 
-    vector<int> M(N, 0);
-    for (int i=0; i<N; i++) {
+    vector<ull> M(N, 0);
+    for (ull i=0; i<N; i++) {
         cin >> M[i];
     }
 
     sort(M.begin(), M.end());
 
-    // To be continued...
-    
+    ull result = 1;
+    for (ull i=0; i<N; i++) {
+        if (M[i] > result) {
+            break;
+        }
+        result += M[i];
+    }
+
+    cout << result;
+
     return 0;
 }

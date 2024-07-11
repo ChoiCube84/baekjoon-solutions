@@ -33,9 +33,9 @@ public:
         }
     }
 
-    const T& getMaxValue(T capacity = maxWeight) {
+    const T& getMaxValue(T capacity) {
         return dp[weight.size()][capacity];
     }
-}
+};
 
 #endif //__KNAPSACK_HPP__
