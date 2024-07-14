@@ -30,7 +30,7 @@ int main(void) {
         for (int i=0; i<R; i++) {
             string input;
             cin >> input;
-            
+
             for (int j=0; j<C; j++) {
                 if (input[j] == '/') {
                     isLeftUp[i][j] = true;
@@ -55,40 +55,45 @@ int main(void) {
             for (int j=0; j<C; j++) {
                 if (isLeftUp[i][j] == true) {
                     if (i > 0) {
-                        diset.merge(posToInt(i, j, true), posToInt(i-1, j, !isLeftUp[i-1][j]));
+                        diset.merge(posToInt(i, j, R, C, true), posToInt(i-1, j, R, C, !isLeftUp[i-1][j]));
                     }
                     if (i < R - 1) {
-                        diset.merge(posToInt(i, j, false), posToInt(i+1, j, isLeftUp[i+1][j]));
+                        diset.merge(posToInt(i, j, R, C, false), posToInt(i+1, j, R, C, isLeftUp[i+1][j]));
                     }
                     if (j > 0) {
-                        diset.merge(posToInt(i, j, true), posToInt(i, j-1, false));
+                        diset.merge(posToInt(i, j, R, C, true), posToInt(i, j-1, R, C, false));
                     }
                     if (j < C - 1) {
-                        diset.merge(posToInt(i, j, false), posToInt(i, j+1, true));
+                        diset.merge(posToInt(i, j, R, C, false), posToInt(i, j+1, R, C, true));
                     }
                 }
                 else {
                     if (i > 0) {
-                        diset.merge(posToInt(i, j, false), posToInt(i-1, j, !isLeftUp[i-1][j]));
+                        diset.merge(posToInt(i, j, R, C, false), posToInt(i-1, j, R, C, !isLeftUp[i-1][j]));
                     }
                     if (i < R - 1) {
-                        diset.merge(posToInt(i, j, true), posToInt(i+1, j, isLeftUp[i+1][j]));
+                        diset.merge(posToInt(i, j, R, C, true), posToInt(i+1, j, R, C, isLeftUp[i+1][j]));
                     }
                     if (j > 0) {
-                        diset.merge(posToInt(i, j, true), posToInt(i, j-1, false));
+                        diset.merge(posToInt(i, j, R, C, true), posToInt(i, j-1, R, C, false));
                     }
                     if (j < C - 1) {
-                        diset.merge(posToInt(i, j, false), posToInt(i, j+1, true));
+                        diset.merge(posToInt(i, j, R, C, false), posToInt(i, j+1, R, C, true));
                     }
                 }
             }
         }
 
         vector<kruskal::Edge> edges;
-        
+
         for (int i=0; i<R; i++) {
             for (int j=0; j<C; j++) {
-                edges.emplace_back(kruskal::Edge(posToInt(i, j, true), posToInt(i, j, false), wallStrength[i][j]));
+                int start = diset.find(posToInt(i, j, R, C, true));
+                int end = diset.find(posToInt(i, j, R, C, false));
+
+                if (start != end) {
+                    edges.emplace_back(kruskal::Edge(start, end, wallStrength[i][j]));
+                }
             }
         }
 
@@ -101,7 +106,7 @@ int main(void) {
 
         cout << "Case #" << t << ": " << total << '\n';
     }
-    
+
     return 0;
 }
 

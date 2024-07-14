@@ -25,20 +25,33 @@ int main(void) {
         graph[p].emplace_back(c);
     }
 
-    int appleInfo = 0;
+    vector<bool> apple(n, false);
+    
     for (int i=0; i<n; i++) {
-        int apple;
-        cin >> apple;
+        int appleExist;
+        cin >> appleExist;
 
-        if (apple == 1) {
-            appleInfo += 1;
+        if (appleExist == 1) {
+            apple[i] = true;
         }
-        appleInfo <<= 1;
     }
     
     return 0;
 }
 
-int dfs(int curr) {
-    return 0;
+int dfs(int curr, int depth, int k, vector<vector<int>>& graph, vector<bool> apple) {
+    int result = 0;
+    
+    if (apple[curr]) {
+        result++;
+        apple[curr] = false;
+    }
+
+    if (depth < k-1) {
+        for (auto& next : graph[curr]) {
+            result += dfs(next, depth+1, apple);
+        }
+    }
+    
+    return result;
 }
