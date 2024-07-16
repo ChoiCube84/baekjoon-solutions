@@ -8,9 +8,12 @@ using ull = unsigned long long int;
 
 using pll = pair<ll, ll>;
 
-ll lengthSquare(const pll& vec);
+ll lengthSquared(const pll& vec);
 long double length(const pll& A, const pll& B);
-pll findMinimumVector(vector<pll> points);
+
+vector<vector<pll>> getCombinations(const vector<pll>& points);
+pll findMinimumSum(const vector<pll>& vectors);
+
 void simulate(void);
 
 int main(void) {
@@ -28,59 +31,70 @@ int main(void) {
     return 0;
 }
 
-ll lengthSquare(const pll& vec) {
+ll lengthSquared(const pll& vec) {
     return vec.first * vec.first + vec.second * vec.second;
 }
 
 long double length(const pll& vec) {
-    return sqrtl(lengthSquare(vec));
+    return sqrtl(lengthSquared(vec));
 }
 
-pair<pll, bool> findMinimumVector(vector<pll> points) { // WIP
+vector<vector<pll>> getCombinations(const vector<pll>& points) {
+    vector<vector<pll>> combinations;
     int N = points.size();
-    pll best = make_pair(-1LL, -1LL);
 
-    if (N == 0) {
-        return make_pair(0LL, 0LL);
+    if (N == 2) {
+        vector<pll> combination;
+        
+        combination.emplace_back(points[1].first - points[0].first, points[1].second - points[0].second);
+        combinations.push_back(combination);
+        
+        return combinations;
     }
 
     for (int i=1; i<N; i++) {
         vector<pll> newPoints = points;
+        pll currVector = make_pair(points[i].first - points[0].first, points[i].second - points[0].second);
 
         newPoints.erase(newPoints.begin());
-        newPoints.erase(newPoints.begin() + i);
+        newPoints.erase(newPoints.begin() + i - 1);
 
-        bool reversible = false;
-        pll cand1, cand2, candidate;
-        ll dx = points[0].first - points[i].first;
-        ll dy = points[0].second - points[i].second;
+        vector<vector<pll>> restCombinations = getCombinations(newPoints);
 
-        auto temp = findMinimumVector(newPoints);
-        pll minimumVector = temp.first;
-
-        cand1.first = dx + minimumVector.first;
-        cand1.second = dy + minimumVector.second;
-
-        cand2.first = minimumVector.first - dx;
-        cand2.second = minimumVector.second - dy;
-
-        if (lengthSquare(cand1) < lengthSquare(cand2) || cand1 == cand2) {
-            candidate = cand1;
-        }
-        else if (lengthSquare(cand1) == lengthSquare(cand2)) {
-            candidate = cand1;
-            reversible = true;
-        }
-        else {
-            candidate = cand2;
-        }
-
-        if (best.first == -1 || lengthSquare(candidate) < lengthSquare(best)) {
-            best = candidate;
+        for (auto& combination : restCombinations) {
+            combination.emplace_back(currVector);
+            combinations.emplace_back(combination);
         }
     }
 
-    return make_pair(best, reversible);
+    return combinations;
+}
+
+pll findMinimumSum(const vector<pll>& vectors) {
+    int N = vectors.size();
+    bool first = true;
+    pll best;
+
+    for (int i=0; i<(1<<N); i++) {
+        pll sum = make_pair(0LL, 0LL);
+        
+        for (int j=0; j<N; j++) {
+            if (i & (1 << j)) {
+                sum.first += vectors[j].first;
+                sum.second += vectors[j].second;
+            } else {
+                sum.first -= vectors[j].first;
+                sum.second -= vectors[j].second;
+            }
+        }
+        
+        if (first || lengthSquared(sum) < lengthSquared(best)) {
+            best = sum;
+            first = false;
+        }
+    }
+
+    return best;
 }
 
 void simulate(void) {
@@ -92,5 +106,18 @@ void simulate(void) {
         cin >> points[i].first >> points[i].second;
     }
 
-    cout << setprecision(15) << fixed << length(findMinimumVector(points)) << '\n';
+    vector<vector<pll>> combinations = getCombinations(points);
+
+    bool first = true;
+    pll best;
+
+    for (auto& combination : combinations) {
+        pll sum = findMinimumSum(combination);
+        if (first || lengthSquared(sum) < lengthSquared(best)) {
+            best = sum;
+            first = false;
+        }
+    }
+
+    cout << setprecision(15) << fixed << length(best) << '\n';
 }
