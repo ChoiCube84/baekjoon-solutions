@@ -100,22 +100,35 @@ int findDistance(int nodeA, int nodeB) {
     }
     else {
         for (int i=16; i>=0; i--) {
-            if (parent[nodeA][i].first != 0 && parent[nodeA][i].first != parent[nodeB][i].first) {
-                distFromNodeA += parent[nodeA][i].second;
-                distFromNodeB += parent[nodeB][i].second;
+            if (parent[nodeA][i].first != 0) {
+                if (parent[nodeA][i].first != parent[nodeB][i].first) {
+                    distFromNodeA += parent[nodeA][i].second;
+                    distFromNodeB += parent[nodeB][i].second;
 
-                nodeA = parent[nodeA][i].first;
-                nodeB = parent[nodeB][i].first;
-            }
-            else {
-                for (int j=0; j<=i; j++) {
-                    if (parent[nodeA][j].first == parent[nodeB][j].first) {
-                        distFromNodeA += parent[nodeA][j].second;
-                        distFromNodeB += parent[nodeB][j].second;
-                        break;
-                    }
+                    nodeA = parent[nodeA][i].first;
+                    nodeB = parent[nodeB][i].first;
                 }
-                break;
+                else {
+                    for (int j=0; j<=i; j++) {
+                        if (parent[nodeA][j].first == parent[nodeB][j].first) {
+                            if (j <= 1) {
+                                distFromNodeA += parent[nodeA][j].second;
+                                distFromNodeB += parent[nodeB][j].second;
+                                break;
+                            }
+                            else {
+                                distFromNodeA += parent[nodeA][j-1].second;
+                                distFromNodeB += parent[nodeB][j-1].second;
+
+                                nodeA = parent[nodeA][j-1].first;
+                                nodeB = parent[nodeB][j-1].first;
+
+                                j = -1;
+                            }
+                        }
+                    }
+                    break;
+                }
             }
         }
 

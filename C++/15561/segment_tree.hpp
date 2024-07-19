@@ -29,13 +29,16 @@ private:
 
     void update(size_t index, const T& value, size_t node, size_t currentLeft, size_t currentRight) {
         if (currentLeft <= index && index <= currentRight) {
-            T difference = value - arr[index];
-            tree[node] = tree[node] + difference;
-
-            if (currentLeft != currentRight) {
+            if (currentLeft == currentRight) {
+                tree[node] = value;
+            }
+            else {
                 size_t mid = (currentLeft + currentRight) / 2;
+                
                 update(index, value, 2 * node, currentLeft, mid);
                 update(index, value, 2 * node + 1, mid + 1, currentRight);
+                
+                tree[node] = tree[2 * node] + tree[2 * node + 1];
             }
         }
     }
