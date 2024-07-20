@@ -24,28 +24,12 @@ private:
         const T& leftValue = tree[2 * idx];
         const T& rightValue = tree[2 * idx + 1];
 
-        tree[idx] = leftValue * rightValue;
-    }
-
-    void update(size_t index, const T& value, size_t node, size_t currentLeft, size_t currentRight) {
-        if (currentLeft <= index && index <= currentRight) {
-            if (currentLeft == currentRight) {
-                tree[node] = value;
-            }
-            else {
-                size_t mid = (currentLeft + currentRight) / 2;
-
-                update(index, value, 2 * node, currentLeft, mid);
-                update(index, value, 2 * node + 1, mid + 1, currentRight);
-
-                tree[node] = tree[2 * node] * tree[2 * node + 1];
-            }
-        }
+        tree[idx] = std::max(leftValue, rightValue);
     }
 
     const T query(size_t i, size_t j, size_t node, size_t currentLeft, size_t currentRight) {
         if (j < currentLeft || currentRight < i) {
-            return static_cast<T>(1);
+            return 0;
         }
         else if (i <= currentLeft && currentRight <= j) {
             return tree[node];
@@ -55,19 +39,15 @@ private:
             const T leftValue = query(i, j, 2 * node, currentLeft, mid);
             const T rightValue = query(i, j, 2 * node + 1, mid + 1, currentRight);
 
-            return leftValue * rightValue;
+            return std::max(leftValue, rightValue);
         }
     }
+
 
 public:
     SegmentTree(const std::vector<T>& a) : arr(a), n(a.size()) {
         tree.resize(4 * n + 1);
         build(1, 0, n - 1);
-    }
-
-    void update(size_t index, const T& value) {
-        update(index, value, 1, 0, n - 1);
-        arr[index] = value;
     }
 
     const T query(size_t i, size_t j) {
