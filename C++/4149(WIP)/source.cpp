@@ -19,6 +19,8 @@ int main(void) {
     ull n;
     cin >> n;
 
+    cout << "Is 162319020967 prime?: " << miller_rabin::isPrime(162319020967) << '\n';
+
     vector<pair<ull, ull>> result = pollard_rho::factorize(n);
 
     for (auto& [key, value] : result) {

@@ -105,6 +105,12 @@ namespace custom_algorithms {
             return result;
         }
 
+        template <typename T>
+        std::string fastMultiplication(const T& A, const T& B) {
+            return fastMultiplication(std::to_string(A), std::to_string(B));
+        }
+
+        template <>
         std::string fastMultiplication(const std::string& A, const std::string& B) {
             std::vector<int> a = stringToVector<int>(A);
             std::vector<int> b = stringToVector<int>(B);
@@ -115,85 +121,71 @@ namespace custom_algorithms {
             std::vector<std::complex<long double>> b_complex(b.begin(), b.end());
 
             std::vector<std::complex<long double>> conv = convolution(a_complex, b_complex, true);
-            std::string result;
-
+            std::vector<int> digitArray(n, 0);
+            
             for (size_t i=0; i<n; i++) {
-                result[i] = static_cast<char>(static_cast<int>(conv[i].real()) + '0');
+                digitArray[i] = static_cast<int>(conv[i].real());
             }
 
+            for (int i=digitArray.size()-1; i>0; i--) {
+                digitArray[i-1] += (digitArray[i] / 10);
+                digitArray[i] %= 10;
+            }
+            
+            std::string result;
+            for (auto& digit : digitArray) {
+                result += std::to_string(digit);
+            }
+            
             return result;
         }
     }
 
     namespace common {
         template <typename T>
-        T stoiWithMOD(const std::string& s, const T& MOD=static_cast<T>(1)) {
+        T stoiWithMOD(const std::string& s, const T& MOD=static_cast<T>(0)) {
             T result = static_cast<T>(0);
+
             for (auto& c : s) {
                 result *= 10;
-                result %= MOD;
 
-                result += ((c - '0') % MOD);
-                result %= MOD;
+                if (MOD != 0) {
+                    result %= MOD;
+                }
+
+                T added = static_cast<T>(c - '0');
+                if (MOD != 0) {
+                    added %= MOD;
+                }
+
+                result += added;
+
+                if (MOD != 0) {
+                    result %= MOD;
+                }
             }
-
             return result;
         }
 
         template <typename T>
-        T multWithMOD_naive(const T& a, const T& b, const T& MOD=static_cast<T>(1)) {
-            if (a == 0) {
-                return static_cast<T>(0);
-            }
-
-            long long int digits = static_cast<long long int>(std::log10(static_cast<long double>(a)) + 1);
-            T result = static_cast<T>(0);
-
-            while (digits) {
-                digits--;
-
-                result *= 10;
-                result %= MOD;
-
-                result += ((a / static_cast<T>(std::pow(10, digits)) * b) % MOD);
-                result %= MOD;
-            }
-
-            return result;
-        }
-
-        template <typename T>
-        T power(const T& a, const T& b, const T& MOD=static_cast<T>(1)){
+        T power(const T& a, const T& b, const T& MOD=static_cast<T>(0)){
             T result = static_cast<T>(1);
 
-            T base = a % MOD;
+            std::string (*mult)(const T&, const T&) = fft::fastMultiplication<T>;
+
+            T base = a;
             T exponent = b;
+
+            if (MOD != 0) {
+                base %= MOD;
+            }
 
             while (exponent) {
                 if (exponent % 2 == 1) {
-                    result = stoiWithMOD(fft::fastMultiplication(std::to_string(result), std::to_string(base)), MOD);
+                    result = stoiWithMOD(mult(result, base), MOD);
                 }
 
-                base = stoiWithMOD(fft::fastMultiplication(std::to_string(base), std::to_string(base)), MOD);
-                exponent >>= 1;
-            }
-
-            return result;
-        }
-
-        template <typename T>
-        T power_naive(const T& a, const T& b, const T& MOD=static_cast<T>(1)){
-            T result = static_cast<T>(1);
-
-            T base = a % MOD;
-            T exponent = b;
-
-            while (exponent) {
-                if (exponent % 2 == 1) {
-                    result = multWithMOD_naive(result, base, MOD);
-                }
-
-                base = multWithMOD_naive(base, base, MOD);
+                base = stoiWithMOD(mult(base, base), MOD);
                 exponent >>= 1;
             }
 
@@ -204,24 +196,24 @@ namespace custom_algorithms {
     namespace miller_rabin {
         std::vector<int> basicPrimes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
 
-        bool millerRabin(unsigned long long a, unsigned long long n) {
-            unsigned long long k = n-1;
+        bool isComposite(unsigned long long int a, unsigned long long int n) {
+            unsigned long long int k = n - 1;
 
             while (true) {
-                unsigned long long d = common::power_naive(a, k, n);
+                unsigned long long int d = common::power(a, k, n);
 
                 if (k % 2 == 1) {
-                    return (d == 1 || d == n - 1);
+                    return (d != 1 && d != n - 1);
                 }
                 else if (d == n - 1) {
-                    return true;
+                    return false;
                 }
 
-                k >>= 1;
+                k /= 2;
             }
         }
 
-        bool isPrime(unsigned long long n) {
+        bool isPrime(unsigned long long int n) {
             if (n <= 1) {
                 return false;
             }
@@ -233,7 +225,10 @@ namespace custom_algorithms {
                 else if (n % prime == 0) {
                     return false;
                 }
-                else if (!millerRabin(n, prime)) {
+            }
+
+            for (auto& prime : basicPrimes) {
+                if (isComposite(prime, n)) {
                     return false;
                 }
             }
@@ -242,12 +237,14 @@ namespace custom_algorithms {
         }
     }
 
-    namespace pollard_rho { // WIP
+    namespace pollard_rho {
         unsigned long long int findFactor(unsigned long long int n) {
             static std::mt19937_64 mt(std::random_device{}());
 
             static std::uniform_int_distribution<unsigned long long int> dist1(2, n);
             static std::uniform_int_distribution<unsigned long long int> dist2(1, n);
+
+            std::string (*mult)(const unsigned long long int&, const unsigned long long int&) = fft::fastMultiplication<unsigned long long int>;
 
             if (n == 1) {
                 return 1;
@@ -266,10 +263,10 @@ namespace custom_algorithms {
                 unsigned long long int d = 1;
 
                 while (d == 1) {
-                    x = (((x * x) % n) + c) % n;
+                    x = (common::stoiWithMOD(mult(x, x), n) + c) % n;
 
-                    y = (((y * y) % n) + c) % n;
-                    y = (((y * y) % n) + c) % n;
+                    y = (common::stoiWithMOD(mult(y, y), n) + c) % n;
+                    y = (common::stoiWithMOD(mult(y, y), n) + c) % n;
 
                     d = std::gcd(n, (x > y ? x - y : y - x));
 
@@ -308,7 +305,7 @@ namespace custom_algorithms {
                 }
             }
 
-            sort(result.begin(), result.end(), cmp());
+            std::sort(result.begin(), result.end(), cmp());
 
             return result;
         }
