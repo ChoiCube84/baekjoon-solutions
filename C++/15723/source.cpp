@@ -13,7 +13,6 @@ namespace floyd_warshall {
                 for (auto [end, _] : distance) {
                     if (distance[start][end] > distance[start][middle] + distance[middle][end]) {
                         distance[start][end] = distance[start][middle] + distance[middle][end];
-                        cout << "s m e d: " << start << " " << middle << " " << end << " " << distance[start][end] << endl; 
                     }
                 }
             }
@@ -43,7 +42,7 @@ int main(void) {
 
     for (int i=0; i<n; i++) {
         string input;
-
+        getline(cin, input);
 
         graph[input[0] - 'a'][input[5] - 'a'] = 1;
     }
@@ -59,7 +58,6 @@ int main(void) {
         string input;
         getline(cin, input);
 
-        cout << "Test: " << input[0] << " to " << input[5] << " is " << distance[input[0] - 'a'][input[5] - 'a'] << endl;
         bool result = (distance[input[0] - 'a'][input[5] - 'a'] < 100);
 
         if (result) {

@@ -122,7 +122,7 @@ namespace custom_algorithms {
 
             std::vector<std::complex<long double>> conv = convolution(a_complex, b_complex, true);
             std::vector<int> digitArray(n, 0);
-            
+
             for (size_t i=0; i<n; i++) {
                 digitArray[i] = static_cast<int>(conv[i].real());
             }
@@ -131,12 +131,12 @@ namespace custom_algorithms {
                 digitArray[i-1] += (digitArray[i] / 10);
                 digitArray[i] %= 10;
             }
-            
+
             std::string result;
             for (auto& digit : digitArray) {
                 result += std::to_string(digit);
             }
-            
+
             return result;
         }
     }
@@ -147,7 +147,27 @@ namespace custom_algorithms {
             T result = static_cast<T>(0);
 
             for (auto& c : s) {
-                result *= 10;
+                result *= 2;
+
+                if (MOD != 0) {
+                    result %= MOD;
+                }
+
+                T temp = result;
+
+                temp *= 2;
+
+                if (MOD != 0) {
+                    temp %= MOD;
+                }
+
+                temp *= 2;
+
+                if (MOD != 0) {
+                    temp %= MOD;
+                }
+
+                result += temp;
 
                 if (MOD != 0) {
                     result %= MOD;
@@ -168,7 +188,20 @@ namespace custom_algorithms {
         }
 
         template <typename T>
-        T power(const T& a, const T& b, const T& MOD=static_cast<T>(0)){
+        T multWithMOD_int128(const T& a, const T& b, const T& MOD=static_cast<T>(0)) {
+            __int128 result = a;
+
+            result *= static_cast<__int128>(b);
+
+            if (MOD != 0) {
+                result %= MOD;
+            }
+
+            return result;
+        }
+
+        template <typename T>
+        T power(const T& a, const T& b, const T& MOD=static_cast<T>(0), bool useInt128 = true){
             T result = static_cast<T>(1);
 
             std::string (*mult)(const T&, const T&) = fft::fastMultiplication<T>;
@@ -182,10 +215,21 @@ namespace custom_algorithms {
 
             while (exponent) {
                 if (exponent % 2 == 1) {
-                    result = stoiWithMOD(mult(result, base), MOD);
+                    if (!useInt128) {
+                        result = stoiWithMOD(mult(result, base), MOD);
+                    }
+                    else {
+                        result = multWithMOD_int128(result, base, MOD);
+                    }
                 }
 
-                base = stoiWithMOD(mult(base, base), MOD);
+                if (!useInt128) {
+                    base = stoiWithMOD(mult(base, base), MOD);
+                }
+                else {
+                    base = multWithMOD_int128(base, base, MOD);
+                }
+
                 exponent >>= 1;
             }
 
@@ -196,11 +240,11 @@ namespace custom_algorithms {
     namespace miller_rabin {
         std::vector<int> basicPrimes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
 
-        bool isComposite(unsigned long long int a, unsigned long long int n) {
+        bool isComposite(unsigned long long int a, unsigned long long int n, bool useInt128 = true) {
             unsigned long long int k = n - 1;
 
             while (true) {
-                unsigned long long int d = common::power(a, k, n);
+                unsigned long long int d = common::power(a, k, n, useInt128);
 
                 if (k % 2 == 1) {
                     return (d != 1 && d != n - 1);
@@ -213,7 +257,7 @@ namespace custom_algorithms {
             }
         }
 
-        bool isPrime(unsigned long long int n) {
+        bool isPrime(unsigned long long int n, bool useInt128 = true) {
             if (n <= 1) {
                 return false;
             }
@@ -228,7 +272,7 @@ namespace custom_algorithms {
             }
 
             for (auto& prime : basicPrimes) {
-                if (isComposite(prime, n)) {
+                if (isComposite(prime, n, useInt128)) {
                     return false;
                 }
             }
@@ -238,7 +282,7 @@ namespace custom_algorithms {
     }
 
     namespace pollard_rho {
-        unsigned long long int findFactor(unsigned long long int n) {
+        unsigned long long int findFactor(unsigned long long int n, bool useInt128 = true) {
             static std::mt19937_64 mt(std::random_device{}());
 
             static std::uniform_int_distribution<unsigned long long int> dist1(2, n);
@@ -263,10 +307,18 @@ namespace custom_algorithms {
                 unsigned long long int d = 1;
 
                 while (d == 1) {
-                    x = (common::stoiWithMOD(mult(x, x), n) + c) % n;
+                    if (!useInt128) {
+                        x = (common::stoiWithMOD(mult(x, x), n) + c) % n;
 
-                    y = (common::stoiWithMOD(mult(y, y), n) + c) % n;
-                    y = (common::stoiWithMOD(mult(y, y), n) + c) % n;
+                        y = (common::stoiWithMOD(mult(y, y), n) + c) % n;
+                        y = (common::stoiWithMOD(mult(y, y), n) + c) % n;
+                    }
+                    else {
+                        x = common::multWithMOD_int128(x, x, n) + c;
+
+                        y = common::multWithMOD_int128(y, y, n) + c;
+                        y = common::multWithMOD_int128(y, y, n) + c;
+                    }
 
                     d = std::gcd(n, (x > y ? x - y : y - x));
 
@@ -275,7 +327,7 @@ namespace custom_algorithms {
                     }
                 }
 
-                if (miller_rabin::isPrime(d)) {
+                if (miller_rabin::isPrime(d, useInt128)) {
                     return d;
                 }
                 else {
@@ -284,7 +336,7 @@ namespace custom_algorithms {
             }
         }
 
-        std::vector<std::pair<unsigned long long int, unsigned long long int>> factorize(unsigned long long int n) {
+        std::vector<std::pair<unsigned long long int, unsigned long long int>> factorize(unsigned long long int n, bool useInt128 = true) {
             std::vector<std::pair<unsigned long long int, unsigned long long int>> result;
 
             struct cmp {
@@ -294,7 +346,7 @@ namespace custom_algorithms {
             };
 
             while (n > 1) {
-                unsigned long long int factor = findFactor(n);
+                unsigned long long int factor = findFactor(n, useInt128);
 
                 n /= factor;
                 result.emplace_back(std::make_pair(factor, 1));
@@ -308,6 +360,38 @@ namespace custom_algorithms {
             std::sort(result.begin(), result.end(), cmp());
 
             return result;
+        }
+    }
+
+    namespace euler_totient {
+        unsigned long long int phi(unsigned long long int n) {
+            unsigned long long int result = 1;
+            auto factors = pollard_rho::factorize(n);
+
+            for (auto& [factor, power] : factors) {
+                result *= common::power(factor, power-1) * (factor-1);
+            }
+
+            return result;
+        }
+    }
+
+    namespace floyd_warshall {
+        template <template<typename, typename> typename Table, typename Node, typename Distance>
+        Table<Node, Table<Node, Distance>> getShortestPath(const Table<Node, Table<Node, Distance>>& graph) {
+            Table<Node, Table<Node, Distance>> distance = graph;
+
+            for (auto [middle, _] : distance) {
+                for (auto [start, _] : distance) {
+                    for (auto [end, _] : distance) {
+                        if (distance[start][end] > distance[start][middle] + distance[middle][end]) {
+                            distance[start][end] = distance[start][middle] + distance[middle][end];
+                        }
+                    }
+                }
+            }
+
+            return distance;
         }
     }
 }
