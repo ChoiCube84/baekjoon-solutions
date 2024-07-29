@@ -10,10 +10,7 @@ using pll = pair<ll, ll>;
 
 struct cmp {
 	bool operator()(const pll& a, const pll& b) const {
-		if (a.first < b.first) {
-			return true;
-		}
-		else if (a.first == b.first && a.second < b.second) {
+		if (a.first > b.first) {
 			return true;
 		}
 		else {
@@ -38,19 +35,24 @@ int main(void) {
 
 	sort(students.begin(), students.end(), cmp());
 
-	// int groups = 0;
+	multiset<int> groups;
 
-	// while (students.size() > 0) {
-	// 	pll tallest = students.back();
-	// 	students.pop_back();
+	for (auto& student : students) {
+		auto it = groups.lower_bound(student.second);
 
-	// 	// WIP
-	// }
+		if (it == groups.begin()) {
+			groups.insert(1);
+		}
+		else {
+			it = prev(it);
+			int groupSize = *it;
 
-	cout << '\n';
-	for (int i=0; i<N; i++) {
-		cout << students[i].first << " " << students[i].second << '\n';
+			groups.erase(it);
+			groups.insert(groupSize + 1);
+		}
 	}
-	
+
+	cout << groups.size();
+
 	return 0;
 }
