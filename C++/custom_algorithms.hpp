@@ -376,22 +376,66 @@ namespace custom_algorithms {
         }
     }
 
-    namespace floyd_warshall {
-        template <template<typename, typename> typename Table, typename Node, typename Distance>
-        Table<Node, Table<Node, Distance>> getShortestPath(const Table<Node, Table<Node, Distance>>& graph) {
-            Table<Node, Table<Node, Distance>> distance = graph;
+    namespace shortest_path {
+        namespace floyd_warshall {
+            template <template<typename, typename> typename Table, typename Node, typename Distance>
+            Table<Node, Table<Node, Distance>> getShortestPath(const Table<Node, Table<Node, Distance>>& graph) {
+                Table<Node, Table<Node, Distance>> distance = graph;
 
-            for (auto [middle, _] : distance) {
-                for (auto [start, _] : distance) {
-                    for (auto [end, _] : distance) {
-                        if (distance[start][end] > distance[start][middle] + distance[middle][end]) {
-                            distance[start][end] = distance[start][middle] + distance[middle][end];
+                for (auto [middle, _] : distance) {
+                    for (auto [start, _] : distance) {
+                        for (auto [end, _] : distance) {
+                            if (distance[start][end] > distance[start][middle] + distance[middle][end]) {
+                                distance[start][end] = distance[start][middle] + distance[middle][end];
+                            }
                         }
                     }
                 }
-            }
 
-            return distance;
+                return distance;
+            }
+        }
+
+        namespace dijkstra {
+            template <template<typename, typename> typename Table, typename Node, typename Distance>
+            Distance getShortestPath(const Table<Node, Table<Node, Distance>>& graph, const Node& start, const Node& end) {
+                Table<Node, Distance> distance;
+                distance[start] = 0;
+
+                struct cmp {
+                    bool operator()(const std::pair<Node, Distance>& a, const std::pair<Node, Distance>& b) {
+                        return a.second > b.second;
+                    }
+                }
+                std::priority_queue<std::pair<Node, Distance>, std::vector<std::pair<Node, Distance>>, cmp> pq;
+                pq.push(std::make_pair(start, 0));
+
+                while (!pq.empty()) {
+                    auto [currNode, currDist] = pq.top();
+                    pq.pop();
+
+                    if (distance.find(currNode) != distance.end() && distance[currNode] < currDist) {
+                        continue;
+                    }
+
+                    for (auto [next, weight] : graph[currNode]) {
+                        if (weight < 0) {
+                            return -1;
+                        }
+                        if (distance.find(next) == distance.end() || distance[next] > currDist + weight) {
+                            distance[next] = currDist + weight;
+                            pq.push(std::make_pair(next, distance[next]));
+                        }
+                    }
+                }
+
+                if (distance.find(end) == distance.end()) {
+                    return -1;
+                }
+                else {
+                    return distance[end];
+                }
+            }
         }
     }
 }
