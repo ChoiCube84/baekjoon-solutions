@@ -182,7 +182,7 @@ public:
 
 	T trace(void) {
 		T result = 0;
-		
+
 		for (size_t i = 0; i < row; i++) {
 			result += elements[i][i];
 		}
