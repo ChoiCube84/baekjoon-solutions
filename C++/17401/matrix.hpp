@@ -37,7 +37,7 @@ public:
 	Matrix(const Matrix& other) : mod(other.mod) {
 		this->row = other.row;
 		this->column = other.column;
-
+		
 		elements = new T * [row];
 
 		for (size_t i = 0; i < row; i++) {
@@ -186,7 +186,7 @@ public:
 
 	T trace(void) {
 		T result = 0;
-
+		
 		for (size_t i = 0; i < row; i++) {
 			result += elements[i][i];
 		}
