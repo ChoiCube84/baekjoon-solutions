@@ -75,4 +75,9 @@ public:
     }
 };
 
+template <typename V, typename L>
+class LazyPropagationSegmentTree : public SegmentTree {
+    // WIP
+}
+
 #endif // !__SEGMENT_TREE_HPP__
