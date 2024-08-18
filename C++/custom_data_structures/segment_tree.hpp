@@ -5,7 +5,7 @@
 
 template <typename T>
 class SegmentTree {
-private:
+protected:
     std::vector<T> tree;
     std::vector<T> arr;
     size_t n;
@@ -76,7 +76,11 @@ public:
 };
 
 template <typename V, typename L>
-class LazyPropagationSegmentTree : public SegmentTree {
+class LazyPropagationSegmentTree : public SegmentTree<V> {
+private:
+    std::vector<L> lazy;
+
+public:
     // WIP
 }
 
