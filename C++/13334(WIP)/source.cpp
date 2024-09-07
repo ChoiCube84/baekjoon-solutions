@@ -11,11 +11,11 @@ using ld = long double;
 
 struct cmp {
 	bool operator()(const pll& a, const pll& b) {
-		if (a.first == b.first) {
-			return a.second > b.second;
+		if (a.second == b.second) {
+			return a.first > b.first;
 		}
 
-		return a.first > b.first;
+		return a.second > b.second;
 	}
 };
 
@@ -38,6 +38,14 @@ int main(void) {
 
 		pq.push(make_pair(h, o));
 	}
+
+	while (!pq.empty()) {
+		auto [h, o] = pq.top();
+		pq.pop();
+		
+		cout << h << " " << o << endl;
+	}
+	return 0;
 
 	ll d;
 	cin >> d;

@@ -7,6 +7,30 @@
 #include <string>
 #include <random>
 #include <numeric>
+#include <utility>
+
+template <typename T>
+struct GeometricLine {
+    std::pair<T, T> start;
+    std::pair<T, T> end;
+
+    GeometricLine() : start(std::make_pair(0, 0)), end(std::make_pair(0, 0)) {}
+
+    GeometricLine(const std::pair<T, T>& start, const std::pair<T, T>& end) : start(start), end(end) {
+        if (this->start > this->end) {
+            swap(this->end, this->start);
+        }
+    }
+
+    GeometricLine& operator=(const GeometricLine& other) {
+        this->start.first = other.start.first;
+        this->start.second = other.start.second;
+        this->end.first = other.end.first;
+        this->end.second = other.end.second;
+
+        return *this;
+    }
+};
 
 namespace custom_algorithms {
     namespace fft {
@@ -201,7 +225,7 @@ namespace custom_algorithms {
         }
 
         template <typename T>
-        T power(const T& a, const T& b, const T& MOD=static_cast<T>(0), bool useInt128 = true){
+        T power(const T& a, const T& b, const T& MOD=static_cast<T>(0), bool useInt128 = true) {
             T result = static_cast<T>(1);
 
             std::string (*mult)(const T&, const T&) = fft::fastMultiplication<T>;
@@ -237,6 +261,146 @@ namespace custom_algorithms {
         }
     }
 
+    namespace geometry {
+        template <typename T>
+        T innerProduct(const std::vector<T>& u, const std::vector<T>& v) {
+            if (u.size() != v.size()) {
+                throw std::invalid_argument("You cannot inner product two vectors with different dimensions.");
+            }
+
+            T result = 0;
+            for (size_t i=0; i<u.size(); i++) {
+                result += u[i] * v[i];
+            }
+
+            return result;
+        }
+
+        template<typename T>
+        T innerProduct(const std::pair<T, T>& u, const std::pair<T, T>& v) {
+            return u.first * v.first + u.second * v.second;
+        }
+        
+        template<typename T>
+        std::tuple<T, T, T> crossProduct(const std::tuple<T, T, T>& u, const std::tuple<T, T, T>& v) {
+            return std::make_tuple(
+                std::get<2>(u) * std::get<3>(v) - std::get<3>(u) * std::get<2>(v),
+                std::get<3>(u) * std::get<1>(v) - std::get<1>(u) * std::get<3>(v),
+                std::get<1>(u) * std::get<2>(v) - std::get<2>(u) * std::get<1>(v)
+            );
+        }
+
+        template <typename T>
+        T getCCW(const GeometricLine<T>& line, const std::pair<T, T>& target) {
+            return std::get<2>(crossProduct(
+                std::make_tuple(line.end.first - line.start.first, line.end.second - line.start.second, 0), 
+                std::make_tuple(target.first - line.start.first, target.second - line.start.second, 0)));
+        }
+                
+        namespace line_intersection {                
+            enum IntersectionType {
+                NON_INTERSECTION,
+                INTERSECTION
+            };
+
+            template <typename T>
+            IntersectionType checkIntersection(const GeometricLine<T>& A, const GeometricLine<T>& target) {
+                const T ourCCW = getCCW(A, target.start) * getCCW(A, target.end);
+                const T theirCCW = getCCW(target, A.start) * getCCW(target, A.end);
+
+                if (ourCCW == 0 && theirCCW == 0) {
+                    if (A.start > target.end || target.start > A.end) {
+                        return NON_INTERSECTION;
+                    }
+                    else {
+                        return INTERSECTION;
+                    }
+                }
+                else {
+                    return (ourCCW <= 0 && theirCCW <= 0);
+                }
+            }
+        }
+        
+        namespace convex_hull {             
+            class CCW_cmp {
+            private:
+                std::pair<long long int, long long int> origin;
+
+            public:
+                CCW_cmp(const std::pair<long long int, long long int>& origin) : origin(origin) {};
+                
+                bool operator()(const std::pair<long long int, long long int>& A, const std::pair<long long int, long long int>& B) {
+                    GeometricLine<long long int> originToA(origin, A);
+                    long long int ccw = getCCW(originToA, B);
+
+                    if (ccw < 0) {
+                        return false;
+                    }
+                    else if (ccw > 0) {
+                        return true;
+                    }
+                    else {
+                        GeometricLine<long long int> originToB(origin, B);
+
+                        long long int dxA = originToA.end.first - originToA.start.first;
+                        long long int dyA = originToA.end.second - originToA.start.second;
+
+                        long long int dxB = originToB.end.first - originToB.start.first;
+                        long long int dyB = originToB.end.second - originToB.start.second;
+                
+                        long long int lengthSquareA = dxA * dxA + dyA * dyA;
+                        long long int lengthSquareB = dxB * dxB + dyB * dyB;
+                
+                        return lengthSquareA < lengthSquareB;
+                    }
+                }
+            };
+
+            std::stack<std::pair<long long int, long long int>> getConvexHull(const std::vector<std::pair<long long int, long long int>>& originalPoints) {
+                std::vector<std::pair<long long int, long long int>> points = originalPoints;
+                std::sort(points.begin(), points.end());
+
+                CCW_cmp cmp(points[0]);
+                std::sort(points.begin() + 1, points.end(), cmp);
+
+                GeometricLine<long long int> currentLine(points[0], points[1]);
+                std::stack<std::pair<long long int, long long int>> convexHull;
+
+                convexHull.push(points[0]);
+                convexHull.push(points[1]);
+
+                for (size_t i=2; i<points.size(); i++) {
+                    while (convexHull.size() >= 2) {
+                        long long int ccw = getCCW(currentLine, points[i]);
+
+                        if (ccw > 0) {
+                            break;
+                        }
+                        else {
+                            convexHull.pop();
+                            if (convexHull.size() == 1) {
+                                break;
+                            }
+                        }
+
+                        std::pair<long long int, long long int> B = convexHull.top();
+                        convexHull.pop();
+                        std::pair<long long int, long long int> A = convexHull.top();
+                        convexHull.push(B);
+
+                        currentLine = GeometricLine<long long int>(A, B);
+                    }
+
+                    currentLine = GeometricLine<long long int>(convexHull.top(), points[i]);
+                    convexHull.push(points[i]);
+                }
+
+                return convexHull;
+            }
+        }
+    }
+    
     namespace miller_rabin {
         std::vector<int> basicPrimes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
 
