@@ -4,10 +4,12 @@
 #include <utility>
 
 template <typename T>
-struct GeometricLine {
+class GeometricLine {
+private:
 	std::pair<T, T> start;
 	std::pair<T, T> end;
 
+public:
 	GeometricLine() : start(std::make_pair(0, 0)), end(std::make_pair(0, 0)) {}
 
 	GeometricLine(const std::pair<T, T>& start, const std::pair<T, T>& end) : start(start), end(end) {
@@ -25,22 +27,21 @@ struct GeometricLine {
 		return *this;
 	}
 
-	GeometricLine& update(const std::pair<T, T>& newStart, const std::pair<T, T>& newEnd) {
-		this->start = newStart;
-		this->end = newEnd;
+	void update(const std::pair<T, T>& start, const std::pair<T, T>& end) {
+		this->start = start;
+		this->end = end;
 
-		return *this;
+		if (this->start > this->end) {
+			swap(this->end, this->start);
+		}
 	}
 
-	T getCCW(const std::pair<T, T>& target) const {
-		return (end.first - start.first) * (target.second - start.second) - (end.second - start.second) * (target.first - start.first);
+	const std::pair<T, T>& getStart(void) const {
+		return start.first;
 	}
 
-	T lengthSquare(void) const {
-		T dx = end.first - start.first;
-		T dy = end.second - start.second;
-
-		return dx * dx + dy * dy;
+	const std::pair<T, T>& getEnd(void) const {
+		return end;
 	}
 };
 
