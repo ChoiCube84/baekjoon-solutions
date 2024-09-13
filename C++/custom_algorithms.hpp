@@ -272,8 +272,8 @@ namespace custom_algorithms {
         template <typename T>
         T getCCW(const GeometricLine<T>& line, const std::pair<T, T>& target) {
             return std::get<2>(crossProduct(
-                std::make_tuple(line.end.first - line.start.first, line.end.second - line.start.second, 0), 
-                std::make_tuple(target.first - line.start.first, target.second - line.start.second, 0)));
+                std::make_tuple(line.getEnd().first - line.getStart().first, line.getEnd().second - line.getStart().second, 0), 
+                std::make_tuple(target.first - line.getStart().first, target.second - line.getStart().second, 0)));
         }
                 
         namespace line_intersection {                
@@ -288,7 +288,7 @@ namespace custom_algorithms {
                 const T theirCCW = getCCW(target, A.start) * getCCW(target, A.end);
 
                 if (ourCCW == 0 && theirCCW == 0) {
-                    if (A.start > target.end || target.start > A.end) {
+                    if (A.start > target.getEnd() || target.getStart() > A.end) {
                         return NON_INTERSECTION;
                     }
                     else {
@@ -325,11 +325,11 @@ namespace custom_algorithms {
                     else {
                         GeometricLine<long long int> originToB(origin, B);
 
-                        long long int dxA = originToA.end.first - originToA.start.first;
-                        long long int dyA = originToA.end.second - originToA.start.second;
+                        long long int dxA = originToA.getEnd().first - originToA.getStart().first;
+                        long long int dyA = originToA.getEnd().second - originToA.getStart().second;
 
-                        long long int dxB = originToB.end.first - originToB.start.first;
-                        long long int dyB = originToB.end.second - originToB.start.second;
+                        long long int dxB = originToB.getEnd().first - originToB.getStart().first;
+                        long long int dyB = originToB.getEnd().second - originToB.getStart().second;
                 
                         long long int lengthSquareA = dxA * dxA + dyA * dyA;
                         long long int lengthSquareB = dxB * dxB + dyB * dyB;

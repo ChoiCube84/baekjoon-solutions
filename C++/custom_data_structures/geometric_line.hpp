@@ -37,7 +37,7 @@ public:
 	}
 
 	const std::pair<T, T>& getStart(void) const {
-		return start.first;
+		return start;
 	}
 
 	const std::pair<T, T>& getEnd(void) const {

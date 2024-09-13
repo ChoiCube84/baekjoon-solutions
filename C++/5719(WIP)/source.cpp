@@ -1,7 +1,10 @@
 #include <bits/extc++.h>
+#include "../custom_algorithms.hpp"
 
 using namespace __gnu_pbds;
 using namespace std;
+
+using namespace custom_algorithms;
 
 using ll = long long int;
 using ull = unsigned long long int;
@@ -28,7 +31,21 @@ bool solve(void) {
 		return false;
 	}
 
-	// WIP
+	ll S, D;
+	cin >> S >> D;
+	
+	gp_hash_table<ll, gp_hash_table<ll, ll>> table;
+	
+	while (M--) {
+		ll U, V, P;
+		cin >> U >> V >> P;
+		
+		table[U][V] = P;
+	}
+	
+	auto result = shortest_path::dijkstra::getShortestPath(table, S);
+	
+	cout << result[D] << '\n';
 	
 	return true;
 }
