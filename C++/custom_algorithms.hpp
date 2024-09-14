@@ -263,15 +263,15 @@ namespace custom_algorithms {
         template<typename T>
         std::tuple<T, T, T> crossProduct(const std::tuple<T, T, T>& u, const std::tuple<T, T, T>& v) {
             return std::make_tuple(
-                std::get<2>(u) * std::get<3>(v) - std::get<3>(u) * std::get<2>(v),
-                std::get<3>(u) * std::get<1>(v) - std::get<1>(u) * std::get<3>(v),
-                std::get<1>(u) * std::get<2>(v) - std::get<2>(u) * std::get<1>(v)
+                std::get<1>(u) * std::get<2>(v) - std::get<2>(u) * std::get<1>(v),
+                std::get<2>(u) * std::get<0>(v) - std::get<0>(u) * std::get<2>(v),
+                std::get<0>(u) * std::get<1>(v) - std::get<1>(u) * std::get<0>(v)
             );
         }
 
         template <typename T>
         T getCCW(const GeometricLine<T>& line, const std::pair<T, T>& target) {
-            return std::get<2>(crossProduct(
+            return std::get<2>(crossProduct<T>(
                 std::make_tuple(line.getEnd().first - line.getStart().first, line.getEnd().second - line.getStart().second, 0), 
                 std::make_tuple(target.first - line.getStart().first, target.second - line.getStart().second, 0)));
         }

@@ -12,7 +12,10 @@ using ull = unsigned long long int;
 using ld = long double;
 using pll = pair<ll, ll>;
 
+using Graph = gp_hash_table<ll, gp_hash_table<ll, ll>>;
+
 bool solve(void);
+void RemoveShortestPaths(Graph& graph, Graph& reversed_graph, gp_hash_table<ll, ll>& dist, ll curr, vector<bool>& visited);
 
 int main(void) {
 	ios_base::sync_with_stdio(false);
@@ -34,18 +37,43 @@ bool solve(void) {
 	ll S, D;
 	cin >> S >> D;
 	
-	gp_hash_table<ll, gp_hash_table<ll, ll>> table;
+	Graph graph, reversed_graph;
 	
 	while (M--) {
 		ll U, V, P;
 		cin >> U >> V >> P;
 		
-		table[U][V] = P;
+		graph[U][V] = P;
+		reversed_graph[V][U] = P;
 	}
 	
-	auto result = shortest_path::dijkstra::getShortestPath(table, S);
+	auto result = shortest_path::dijkstra::getShortestPath(graph, S);
+	vector<bool> visited(N, false);
+		
+	RemoveShortestPaths(graph, reversed_graph, result, D, visited);
 	
-	cout << result[D] << '\n';
+	result = shortest_path::dijkstra::getShortestPath(graph, S);
+	
+	if (result.find(D) == result.end()) {
+		cout << -1 << '\n';
+	}
+	else {
+		cout << result[D] << '\n';
+	}	
 	
 	return true;
+}
+
+void RemoveShortestPaths(Graph& graph, Graph& reversed_graph, gp_hash_table<ll, ll>& dist, ll curr, vector<bool>& visited) {
+    if (visited[curr]) return;
+    visited[curr] = true;
+	
+    for (auto& [prev, weight] : reversed_graph[curr]) {
+		cout << "Checking " << prev << " to " << curr << '\n';
+        if (dist.find(prev) != dist.end() && dist[prev] + weight == dist[curr]) {
+            graph[prev].erase(curr);
+			cout << "Just pruned " << prev << " to " << curr << '\n';
+            RemoveShortestPaths(graph, reversed_graph, dist, prev, visited);
+        }
+    }
 }
