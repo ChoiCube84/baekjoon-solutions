@@ -8,14 +8,13 @@
 #include <random>
 #include <numeric>
 #include <utility>
+#include <algorithm>
 
 #include "custom_data_structures/geometric_line.hpp"
 
 namespace custom_algorithms {
     namespace fft {
-        long double const_pi(void) {
-            return std::atan(1) * 4;
-        }
+		constexpr long double kPi = 3.141592653589793238462643383279502L;
 
         void FFT(std::vector<std::complex<long double>>& a, const std::complex<long double>& w) {
             size_t n = a.size();
@@ -46,9 +45,8 @@ namespace custom_algorithms {
             }
         }
 
-        std::vector<std::complex<long double>> convolution(std::vector<std::complex<long double>> a, std::vector<std::complex<long double>> b, bool getIntegerResult = false) {
+        std::vector<std::complex<long double>> Convolution(std::vector<std::complex<long double>> a, std::vector<std::complex<long double>> b, bool getIntegerResult = false) {
             size_t n = 1;
-            long double pi = const_pi();
 
             while (n <= a.size() || n <= b.size()) {
                 n <<= 1;
@@ -60,7 +58,7 @@ namespace custom_algorithms {
 
             std::vector<std::complex<long double>> c(n);
 
-            std::complex<long double> w(cos(2 * pi / n), sin(2 * pi / n));
+            std::complex<long double> w(cos(2 * kPi / n), sin(2 * kPi / n));
 
             FFT(a, w);
             FFT(b, w);
@@ -82,7 +80,7 @@ namespace custom_algorithms {
         }
 
         template <typename T>
-        std::vector<T> stringToVector(const std::string& str) {
+        std::vector<T> StringToVector(const std::string& str) {
             std::vector<T> result(str.size());
 
             for (size_t i=0; i<str.size(); i++) {
@@ -93,7 +91,7 @@ namespace custom_algorithms {
         }
 
         template <typename T>
-        std::string vectorToString(const std::vector<T>& vec) {
+        std::string VectorToString(const std::vector<T>& vec) {
             for (size_t i=vec.size()-1; i>0; i--) {
                 vec[i-1] += (vec[i] / 10);
                 vec[i] %= 10;
@@ -109,21 +107,21 @@ namespace custom_algorithms {
         }
 
         template <typename T>
-        std::string fastMultiplication(const T& A, const T& B) {
-            return fastMultiplication(std::to_string(A), std::to_string(B));
+        std::string FastMultiplication(const T& a, const T& b) {
+            return FastMultiplication(std::to_string(a), std::to_string(b));
         }
 
         template <>
-        std::string fastMultiplication(const std::string& A, const std::string& B) {
-            std::vector<int> a = stringToVector<int>(A);
-            std::vector<int> b = stringToVector<int>(B);
+        std::string FastMultiplication(const std::string& A, const std::string& B) {
+            std::vector<int> a = StringToVector<int>(A);
+            std::vector<int> b = StringToVector<int>(B);
 
             size_t n = a.size() + b.size() - 1;
 
             std::vector<std::complex<long double>> a_complex(a.begin(), a.end());
             std::vector<std::complex<long double>> b_complex(b.begin(), b.end());
 
-            std::vector<std::complex<long double>> conv = convolution(a_complex, b_complex, true);
+            std::vector<std::complex<long double>> conv = Convolution(a_complex, b_complex, true);
             std::vector<int> digitArray(n, 0);
 
             for (size_t i=0; i<n; i++) {
@@ -146,91 +144,91 @@ namespace custom_algorithms {
 
     namespace common {
         template <typename T>
-        T stoiWithMOD(const std::string& s, const T& MOD=static_cast<T>(0)) {
+        T StoiWithMod(const std::string& s, const T& mod=static_cast<T>(0)) {
             T result = static_cast<T>(0);
 
             for (auto& c : s) {
                 result *= 2;
 
-                if (MOD != 0) {
-                    result %= MOD;
+                if (mod != 0) {
+                    result %= mod;
                 }
 
                 T temp = result;
 
                 temp *= 2;
 
-                if (MOD != 0) {
-                    temp %= MOD;
+                if (mod != 0) {
+                    temp %= mod;
                 }
 
                 temp *= 2;
 
-                if (MOD != 0) {
-                    temp %= MOD;
+                if (mod != 0) {
+                    temp %= mod;
                 }
 
                 result += temp;
 
-                if (MOD != 0) {
-                    result %= MOD;
+                if (mod != 0) {
+                    result %= mod;
                 }
 
                 T added = static_cast<T>(c - '0');
-                if (MOD != 0) {
-                    added %= MOD;
+                if (mod != 0) {
+                    added %= mod;
                 }
 
                 result += added;
 
-                if (MOD != 0) {
-                    result %= MOD;
+                if (mod != 0) {
+                    result %= mod;
                 }
             }
             return result;
         }
 
         template <typename T>
-        T multWithMOD_int128(const T& a, const T& b, const T& MOD=static_cast<T>(0)) {
+        T MultWithModUsingInt128(const T& a, const T& b, const T& mod=static_cast<T>(0)) {
             __int128 result = a;
 
             result *= static_cast<__int128>(b);
 
-            if (MOD != 0) {
-                result %= MOD;
+            if (mod != 0) {
+                result %= mod;
             }
 
             return result;
         }
 
         template <typename T>
-        T power(const T& a, const T& b, const T& MOD=static_cast<T>(0), bool useInt128 = true) {
+        T Power(const T& a, const T& b, const T& mod=static_cast<T>(0), bool use_int128 = true) {
             T result = static_cast<T>(1);
 
-            std::string (*mult)(const T&, const T&) = fft::fastMultiplication<T>;
+            std::string (*mult)(const T&, const T&) = fft::FastMultiplication<T>;
 
             T base = a;
             T exponent = b;
 
-            if (MOD != 0) {
-                base %= MOD;
+            if (mod != 0) {
+                base %= mod;
             }
 
             while (exponent) {
                 if (exponent % 2 == 1) {
-                    if (!useInt128) {
-                        result = stoiWithMOD(mult(result, base), MOD);
+                    if (!use_int128) {
+                        result = StoiWithMod(mult(result, base), mod);
                     }
                     else {
-                        result = multWithMOD_int128(result, base, MOD);
+                        result = MultWithModUsingInt128(result, base, mod);
                     }
                 }
 
-                if (!useInt128) {
-                    base = stoiWithMOD(mult(base, base), MOD);
+                if (!use_int128) {
+                    base = StoiWithMod(mult(base, base), mod);
                 }
                 else {
-                    base = multWithMOD_int128(base, base, MOD);
+                    base = MultWithModUsingInt128(base, base, mod);
                 }
 
                 exponent >>= 1;
@@ -242,7 +240,7 @@ namespace custom_algorithms {
 
     namespace geometry {
         template <typename T>
-        T innerProduct(const std::vector<T>& u, const std::vector<T>& v) {
+        T InnerProduct(const std::vector<T>& u, const std::vector<T>& v) {
             if (u.size() != v.size()) {
                 throw std::invalid_argument("You cannot inner product two vectors with different dimensions.");
             }
@@ -256,12 +254,12 @@ namespace custom_algorithms {
         }
 
         template<typename T>
-        T innerProduct(const std::pair<T, T>& u, const std::pair<T, T>& v) {
+        T InnerProduct(const std::pair<T, T>& u, const std::pair<T, T>& v) {
             return u.first * v.first + u.second * v.second;
         }
         
         template<typename T>
-        std::tuple<T, T, T> crossProduct(const std::tuple<T, T, T>& u, const std::tuple<T, T, T>& v) {
+        std::tuple<T, T, T> CrossProduct(const std::tuple<T, T, T>& u, const std::tuple<T, T, T>& v) {
             return std::make_tuple(
                 std::get<1>(u) * std::get<2>(v) - std::get<2>(u) * std::get<1>(v),
                 std::get<2>(u) * std::get<0>(v) - std::get<0>(u) * std::get<2>(v),
@@ -270,10 +268,10 @@ namespace custom_algorithms {
         }
 
         template <typename T>
-        T getCCW(const GeometricLine<T>& line, const std::pair<T, T>& target) {
-            return std::get<2>(crossProduct<T>(
-                std::make_tuple(line.getEnd().first - line.getStart().first, line.getEnd().second - line.getStart().second, 0), 
-                std::make_tuple(target.first - line.getStart().first, target.second - line.getStart().second, 0)));
+        T GetCCW(const GeometricLine<T>& line, const std::pair<T, T>& target) {
+            return std::get<2>(CrossProduct<T>(
+                std::make_tuple(line.GetEnd().first - line.GetStart().first, line.GetEnd().second - line.GetStart().second, 0), 
+                std::make_tuple(target.first - line.GetStart().first, target.second - line.GetStart().second, 0)));
         }
                 
         namespace line_intersection {                
@@ -283,12 +281,12 @@ namespace custom_algorithms {
             };
 
             template <typename T>
-            IntersectionType checkIntersection(const GeometricLine<T>& A, const GeometricLine<T>& target) {
-                const T ourCCW = getCCW(A, target.start) * getCCW(A, target.end);
-                const T theirCCW = getCCW(target, A.start) * getCCW(target, A.end);
+            IntersectionType CheckIntersection(const GeometricLine<T>& A, const GeometricLine<T>& target) {
+                const T ourCCW = GetCCW(A, target.start) * GetCCW(A, target.end);
+                const T theirCCW = GetCCW(target, A.start) * GetCCW(target, A.end);
 
                 if (ourCCW == 0 && theirCCW == 0) {
-                    if (A.start > target.getEnd() || target.getStart() > A.end) {
+                    if (A.start > target.GetEnd() || target.GetStart() > A.end) {
                         return NON_INTERSECTION;
                     }
                     else {
@@ -305,16 +303,16 @@ namespace custom_algorithms {
         }
         
         namespace convex_hull {             
-            class CCW_cmp {
+            class CmpByCCW {
             private:
                 std::pair<long long int, long long int> origin;
 
             public:
-                CCW_cmp(const std::pair<long long int, long long int>& origin) : origin(origin) {};
+                CmpByCCW(const std::pair<long long int, long long int>& origin) : origin(origin) {};
                 
-                bool operator()(const std::pair<long long int, long long int>& A, const std::pair<long long int, long long int>& B) {
-                    GeometricLine<long long int> originToA(origin, A);
-                    long long int ccw = getCCW(originToA, B);
+                bool operator()(const std::pair<long long int, long long int>& a, const std::pair<long long int, long long int>& b) {
+                    GeometricLine<long long int> origin_to_a(origin, a);
+                    long long int ccw = GetCCW(origin_to_a, b);
 
                     if (ccw < 0) {
                         return false;
@@ -323,74 +321,74 @@ namespace custom_algorithms {
                         return true;
                     }
                     else {
-                        GeometricLine<long long int> originToB(origin, B);
+                        GeometricLine<long long int> origin_to_b(origin, b);
 
-                        long long int dxA = originToA.getEnd().first - originToA.getStart().first;
-                        long long int dyA = originToA.getEnd().second - originToA.getStart().second;
+                        long long int dx_a = origin_to_a.GetEnd().first - origin_to_a.GetStart().first;
+                        long long int dy_a = origin_to_a.GetEnd().second - origin_to_a.GetStart().second;
 
-                        long long int dxB = originToB.getEnd().first - originToB.getStart().first;
-                        long long int dyB = originToB.getEnd().second - originToB.getStart().second;
+                        long long int dx_b = origin_to_b.GetEnd().first - origin_to_b.GetStart().first;
+                        long long int dy_b = origin_to_b.GetEnd().second - origin_to_b.GetStart().second;
                 
-                        long long int lengthSquareA = dxA * dxA + dyA * dyA;
-                        long long int lengthSquareB = dxB * dxB + dyB * dyB;
+                        long long int length_square_a = dx_a * dx_a + dy_a * dy_a;
+                        long long int length_square_b = dx_b * dx_b + dy_b * dy_b;
                 
-                        return lengthSquareA < lengthSquareB;
+                        return length_square_a < length_square_b;
                     }
                 }
             };
 
-            std::stack<std::pair<long long int, long long int>> getConvexHull(const std::vector<std::pair<long long int, long long int>>& originalPoints) {
-                std::vector<std::pair<long long int, long long int>> points = originalPoints;
+            std::vector<std::pair<long long int, long long int>> GetConvexHull(const std::vector<std::pair<long long int, long long int>>& original_points) {
+                std::vector<std::pair<long long int, long long int>> points = original_points;
                 std::sort(points.begin(), points.end());
 
-                CCW_cmp cmp(points[0]);
+                CmpByCCW cmp(points[0]);
                 std::sort(points.begin() + 1, points.end(), cmp);
 
-                GeometricLine<long long int> currentLine(points[0], points[1]);
-                std::stack<std::pair<long long int, long long int>> convexHull;
+                GeometricLine<long long int> current_line(points[0], points[1]);
+                std::vector<std::pair<long long int, long long int>> convex_hull;
 
-                convexHull.push(points[0]);
-                convexHull.push(points[1]);
+                convex_hull.emplace_back(points[0]);
+                convex_hull.emplace_back(points[1]);
 
                 for (size_t i=2; i<points.size(); i++) {
-                    while (convexHull.size() >= 2) {
-                        long long int ccw = getCCW(currentLine, points[i]);
+                    while (convex_hull.size() >= 2) {
+                        long long int ccw = GetCCW(current_line, points[i]);
 
                         if (ccw > 0) {
                             break;
                         }
                         else {
-                            convexHull.pop();
-                            if (convexHull.size() == 1) {
+                            convex_hull.pop_back();
+                            if (convex_hull.size() == 1) {
                                 break;
                             }
                         }
 
-                        std::pair<long long int, long long int> B = convexHull.top();
-                        convexHull.pop();
-                        std::pair<long long int, long long int> A = convexHull.top();
-                        convexHull.push(B);
+                        std::pair<long long int, long long int> b = convex_hull.back();
+                        convex_hull.pop_back();
+                        std::pair<long long int, long long int> a = convex_hull.back();
+                        convex_hull.emplace_back(b);
 
-                        currentLine = GeometricLine<long long int>(A, B);
+                        current_line = GeometricLine<long long int>(a, b);
                     }
 
-                    currentLine = GeometricLine<long long int>(convexHull.top(), points[i]);
-                    convexHull.push(points[i]);
+                    current_line = GeometricLine<long long int>(convex_hull.back(), points[i]);
+                    convex_hull.emplace_back(points[i]);
                 }
 
-                return convexHull;
+                return convex_hull;
             }
         }
     }
     
     namespace miller_rabin {
-        std::vector<int> basicPrimes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
+        std::vector<int> basic_primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
 
-        bool isComposite(unsigned long long int a, unsigned long long int n, bool useInt128 = true) {
+        bool IsComposite(unsigned long long int a, unsigned long long int n, bool use_int128 = true) {
             unsigned long long int k = n - 1;
 
             while (true) {
-                unsigned long long int d = common::power(a, k, n, useInt128);
+                unsigned long long int d = common::Power(a, k, n, use_int128);
 
                 if (k % 2 == 1) {
                     return (d != 1 && d != n - 1);
@@ -403,12 +401,12 @@ namespace custom_algorithms {
             }
         }
 
-        bool isPrime(unsigned long long int n, bool useInt128 = true) {
+        bool IsPrime(unsigned long long int n, bool use_int128 = true) {
             if (n <= 1) {
                 return false;
             }
 
-            for (auto& prime : basicPrimes){
+            for (auto& prime : basic_primes){
                 if (n == prime) {
                     return true;
                 }
@@ -417,8 +415,8 @@ namespace custom_algorithms {
                 }
             }
 
-            for (auto& prime : basicPrimes) {
-                if (isComposite(prime, n, useInt128)) {
+            for (auto& prime : basic_primes) {
+                if (IsComposite(prime, n, use_int128)) {
                     return false;
                 }
             }
@@ -428,13 +426,13 @@ namespace custom_algorithms {
     }
 
     namespace pollard_rho {
-        unsigned long long int findFactor(unsigned long long int n, bool useInt128 = true) {
+        unsigned long long int FindFactor(unsigned long long int n, bool use_int128 = true) {
             static std::mt19937_64 mt(std::random_device{}());
 
             static std::uniform_int_distribution<unsigned long long int> dist1(2, n);
             static std::uniform_int_distribution<unsigned long long int> dist2(1, n);
 
-            std::string (*mult)(const unsigned long long int&, const unsigned long long int&) = fft::fastMultiplication<unsigned long long int>;
+            std::string (*mult)(const unsigned long long int&, const unsigned long long int&) = fft::FastMultiplication<unsigned long long int>;
 
             if (n == 1) {
                 return 1;
@@ -442,7 +440,7 @@ namespace custom_algorithms {
             else if (n % 2 == 0) {
                 return 2;
             }
-            else if (miller_rabin::isPrime(n)) {
+            else if (miller_rabin::IsPrime(n)) {
                 return n;
             }
             else {
@@ -453,36 +451,36 @@ namespace custom_algorithms {
                 unsigned long long int d = 1;
 
                 while (d == 1) {
-                    if (!useInt128) {
-                        x = (common::stoiWithMOD(mult(x, x), n) + c) % n;
+                    if (!use_int128) {
+                        x = (common::StoiWithMod(mult(x, x), n) + c) % n;
 
-                        y = (common::stoiWithMOD(mult(y, y), n) + c) % n;
-                        y = (common::stoiWithMOD(mult(y, y), n) + c) % n;
+                        y = (common::StoiWithMod(mult(y, y), n) + c) % n;
+                        y = (common::StoiWithMod(mult(y, y), n) + c) % n;
                     }
                     else {
-                        x = common::multWithMOD_int128(x, x, n) + c;
+                        x = common::MultWithModUsingInt128(x, x, n) + c;
 
-                        y = common::multWithMOD_int128(y, y, n) + c;
-                        y = common::multWithMOD_int128(y, y, n) + c;
+                        y = common::MultWithModUsingInt128(y, y, n) + c;
+                        y = common::MultWithModUsingInt128(y, y, n) + c;
                     }
 
                     d = std::gcd(n, (x > y ? x - y : y - x));
 
                     if (d == n) {
-                        return findFactor(n);
+                        return FindFactor(n);
                     }
                 }
 
-                if (miller_rabin::isPrime(d, useInt128)) {
+                if (miller_rabin::IsPrime(d, use_int128)) {
                     return d;
                 }
                 else {
-                    return findFactor(d);
+                    return FindFactor(d);
                 }
             }
         }
 
-        std::vector<std::pair<unsigned long long int, unsigned long long int>> factorize(unsigned long long int n, bool useInt128 = true) {
+        std::vector<std::pair<unsigned long long int, unsigned long long int>> Factorize(unsigned long long int n, bool use_int128 = true) {
             std::vector<std::pair<unsigned long long int, unsigned long long int>> result;
 
             struct cmp {
@@ -492,7 +490,7 @@ namespace custom_algorithms {
             };
 
             while (n > 1) {
-                unsigned long long int factor = findFactor(n, useInt128);
+                unsigned long long int factor = FindFactor(n, use_int128);
 
                 n /= factor;
                 result.emplace_back(std::make_pair(factor, 1));
@@ -510,12 +508,12 @@ namespace custom_algorithms {
     }
 
     namespace euler_totient {
-        unsigned long long int phi(unsigned long long int n) {
+        unsigned long long int Phi(unsigned long long int n) {
             unsigned long long int result = 1;
-            auto factors = pollard_rho::factorize(n);
+            auto factors = pollard_rho::Factorize(n);
 
             for (auto& [factor, power] : factors) {
-                result *= common::power(factor, power-1) * (factor-1);
+                result *= common::Power(factor, power-1) * (factor-1);
             }
 
             return result;
@@ -525,7 +523,7 @@ namespace custom_algorithms {
     namespace shortest_path {
         namespace floyd_warshall {
             template <template<typename, typename> typename Table, typename Node, typename Distance>
-            Table<Node, Table<Node, Distance>> getShortestPath(const Table<Node, Table<Node, Distance>>& graph) {
+            Table<Node, Table<Node, Distance>> GetShortestPath(const Table<Node, Table<Node, Distance>>& graph) {
                 Table<Node, Table<Node, Distance>> distance = graph;
 
                 for (auto [middle, _] : distance) {
@@ -543,18 +541,54 @@ namespace custom_algorithms {
         }
 
         namespace dijkstra {
-            template <template<typename, typename> typename Table, typename Node, typename Distance>
-            Table<Node, Distance> getShortestPath(Table<Node, Table<Node, Distance>>& graph, const Node& start) {
-                Table<Node, Distance> distance;
-                distance[start] = 0;
-
-                struct cmp {
+			namespace {
+				template <typename Node, typename Distance>
+				struct cmp {
                     bool operator()(const std::pair<Node, Distance>& a, const std::pair<Node, Distance>& b) {
                         return a.second > b.second;
                     }
                 };
+			}
+			
+			template <typename Node, typename Distance>
+			std::vector<Distance> GetShortestPath(const std::vector<std::vector<std::pair<Node, Distance>>>& graph, const Node& start) {
+				std::vector<Distance> distance(graph.size());
+				std::fill(distance.begin(), distance.end(), -1);
+				
+				distance[start] = 0;
+				
+				std::priority_queue<std::pair<Node, Distance>, std::vector<std::pair<Node, Distance>>, cmp<Node, Distance>> pq;
+                pq.push(std::make_pair(start, 0));
 
-                std::priority_queue<std::pair<Node, Distance>, std::vector<std::pair<Node, Distance>>, cmp> pq;
+                while (!pq.empty()) {
+                    auto [currNode, currDist] = pq.top();
+                    pq.pop();
+
+                    if (distance[currNode] != -1 && distance[currNode] < currDist) {
+                        continue;
+                    }
+
+                    for (auto [next, weight] : graph[currNode]) {
+                        if (weight < 0) {
+							std::fill(distance.begin(), distance.end(), -1);
+                            return distance;
+                        }
+                        if (distance[next] == -1 || distance[next] > currDist + weight) {
+                            distance[next] = currDist + weight;
+                            pq.push(std::make_pair(next, distance[next]));
+                        }
+                    }
+                }
+
+                return distance;
+			}
+			
+            template <template<typename, typename> typename Table, typename Node, typename Distance>
+            Table<Node, Distance> GetShortestPath(Table<Node, Table<Node, Distance>>& graph, const Node& start) {
+                Table<Node, Distance> distance;
+                distance[start] = 0;
+
+                std::priority_queue<std::pair<Node, Distance>, std::vector<std::pair<Node, Distance>>, cmp<Node, Distance>> pq;
                 pq.push(std::make_pair(start, 0));
 
                 while (!pq.empty()) {

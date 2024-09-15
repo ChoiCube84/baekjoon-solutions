@@ -27,7 +27,7 @@ public:
 		return *this;
 	}
 
-	void update(const std::pair<T, T>& start, const std::pair<T, T>& end) {
+	void Update(const std::pair<T, T>& start, const std::pair<T, T>& end) {
 		this->start = start;
 		this->end = end;
 
@@ -36,11 +36,11 @@ public:
 		}
 	}
 
-	const std::pair<T, T>& getStart(void) const {
+	const std::pair<T, T>& GetStart(void) const {
 		return start;
 	}
 
-	const std::pair<T, T>& getEnd(void) const {
+	const std::pair<T, T>& GetEnd(void) const {
 		return end;
 	}
 };
