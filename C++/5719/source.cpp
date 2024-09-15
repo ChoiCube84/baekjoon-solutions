@@ -1,5 +1,5 @@
 #include <bits/extc++.h>
-#include "../custom_algorithms.hpp"
+#include "custom_algorithms.hpp"
 
 using namespace __gnu_pbds;
 using namespace std;
