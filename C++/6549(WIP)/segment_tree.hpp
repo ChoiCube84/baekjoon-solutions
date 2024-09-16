@@ -75,13 +75,4 @@ public:
     }
 };
 
-template <typename V, typename L>
-class LazyPropagationSegmentTree : public SegmentTree<V> {
-private:
-    std::vector<L> lazy;
-
-public:
-    // WIP
-};
-
 #endif // !__SEGMENT_TREE_HPP__
