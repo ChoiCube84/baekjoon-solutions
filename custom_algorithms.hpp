@@ -1,14 +1,15 @@
 #ifndef __CUSTOM_ALGORITHMS_HPP__
 #define __CUSTOM_ALGORITHMS_HPP__
 
-#include <cmath>
-#include <vector>
-#include <complex>
-#include <string>
-#include <random>
-#include <numeric>
-#include <utility>
 #include <algorithm>
+#include <cmath>
+#include <complex>
+#include <concepts>
+#include <numeric>
+#include <random>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "custom_data_structures/geometric_line.hpp"
 
@@ -613,6 +614,45 @@ namespace custom_algorithms {
 
                 return distance;
             }
+			
+			// template<typename State>
+			// concept HasGetNextStates = requires(State state) {
+			// 	{ state.GetNextStates() } -> std::same_as<std::vector<State>>;
+			// };
+			
+			// template <template<typename, typename> typename Table, typename State, typename Distance>
+			// requires HasGetNextStates<State>
+			// Table<State, Distance> GetShortestPath(const Node& start, bool bKeepOnlyTerminalState = true) {
+			// 	Table<Node, Distance> distance;
+			// distance[start] = 0;
+
+			// std::priority_queue<std::pair<Node, Distance>, std::vector<std::pair<Node, Distance>>, cmp<Node, Distance>> pq;
+			// pq.push(std::make_pair(start, 0));
+
+			// while (!pq.empty()) {
+			// auto [currNode, currDist] = pq.top();
+			// pq.pop();
+
+			// if (distance.find(currNode) != distance.end() && distance[currNode] < currDist) {
+			// continue;
+			// }
+
+			// auto next_states = currNode.GetNextStates();
+					
+			// for (auto [next, weight] : next_states) {
+			// if (weight < 0) {
+			// distance.clear();
+			// return distance;
+			// }
+			// if (distance.find(next) == distance.end() || currDist + weight < distance[next]) {
+			// distance[next] = currDist + weight;
+			// pq.push(std::make_pair(next, distance[next]));
+			// }
+			// }
+			// }
+
+			// return distance;
+			// }
         }
     }
 }
