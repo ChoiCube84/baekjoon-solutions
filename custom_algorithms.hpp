@@ -615,44 +615,48 @@ namespace custom_algorithms {
                 return distance;
             }
 			
-			// template<typename State>
-			// concept HasGetNextStates = requires(State state) {
-			// 	{ state.GetNextStates() } -> std::same_as<std::vector<State>>;
-			// };
+			template<typename State, typename Distance>
+			concept HasGetNextStates = requires(State state) {
+				{
+					state.GetNextStates()
+				}
+				-> std::same_as<std::vector<std::pair<State, Distance>>>;
+			};
 			
-			// template <template<typename, typename> typename Table, typename State, typename Distance>
-			// requires HasGetNextStates<State>
-			// Table<State, Distance> GetShortestPath(const Node& start, bool bKeepOnlyTerminalState = true) {
-			// 	Table<Node, Distance> distance;
-			// distance[start] = 0;
+			// TODO: Complete this GetShortestPath function!
+			template <template<typename, typename> typename Table, typename State, typename Distance>
+			requires HasGetNextStates<State>
+			Table<State, Distance> GetShortestPath(const Node& start, bool bKeepOnlyTerminalState = true) {
+				Table<Node, Distance> distance;
+				distance[start] = 0;
 
-			// std::priority_queue<std::pair<Node, Distance>, std::vector<std::pair<Node, Distance>>, cmp<Node, Distance>> pq;
-			// pq.push(std::make_pair(start, 0));
+				std::priority_queue<std::pair<Node, Distance>, std::vector<std::pair<Node, Distance>>, cmp<Node, Distance>> pq;
+				pq.push(std::make_pair(start, 0));
 
-			// while (!pq.empty()) {
-			// auto [currNode, currDist] = pq.top();
-			// pq.pop();
+				while (!pq.empty()) {
+					auto [currNode, currDist] = pq.top();
+					pq.pop();
 
-			// if (distance.find(currNode) != distance.end() && distance[currNode] < currDist) {
-			// continue;
-			// }
+					if (distance.find(currNode) != distance.end() && distance[currNode] < currDist) {
+						continue;
+					}
 
-			// auto next_states = currNode.GetNextStates();
-					
-			// for (auto [next, weight] : next_states) {
-			// if (weight < 0) {
-			// distance.clear();
-			// return distance;
-			// }
-			// if (distance.find(next) == distance.end() || currDist + weight < distance[next]) {
-			// distance[next] = currDist + weight;
-			// pq.push(std::make_pair(next, distance[next]));
-			// }
-			// }
-			// }
+					auto next_states = currNode.GetNextStates();
 
-			// return distance;
-			// }
+					for (auto [next, weight] : next_states) {
+						if (weight < 0) {
+							distance.clear();
+							return distance;
+						}
+						if (distance.find(next) == distance.end() || currDist + weight < distance[next]) {
+							distance[next] = currDist + weight;
+							pq.push(std::make_pair(next, distance[next]));
+						}
+					}
+				}
+
+				return distance;
+			}
         }
     }
 }
