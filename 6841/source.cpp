@@ -22,10 +22,10 @@ int main(void) {
 			cout << "see you" << '\n';
 		}
 		else if (input == ":-)") {
-			cout << "I’m happy" << '\n';
+			cout << "I\’m happy" << '\n';
 		}
 		else if (input == ":-(") {
-			cout << "I’m unhappy" << '\n';
+			cout << "I\’m unhappy" << '\n';
 		}
 		else if (input == ";-)") {
 			cout << "wink" << '\n';
