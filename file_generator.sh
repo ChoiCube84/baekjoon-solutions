@@ -1,3 +1,5 @@
+#!/bin/sh
+
 mkdir $1
 
 case "$2" in
