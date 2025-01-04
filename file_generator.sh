@@ -17,8 +17,7 @@ cp custom_algorithms.hpp $1/custom_algorithms.hpp
 cp file_templates/source.py $1/source.py;;
 
 "rust" | "rs")
-echo "Not implemented yet!"
-rmdir $1;;
+cp file_templates/source.rs $1/source.rs;;
 
 *)
 echo "Wrong input!"
