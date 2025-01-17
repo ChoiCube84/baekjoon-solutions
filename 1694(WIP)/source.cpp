@@ -48,7 +48,7 @@ void solve(const string& FEN) {
 	for (ll i=0; i<8; i++) {
 		for (ll j=0; j<8; j++) {
 			board[i][j] = 0;
-			visited[i][j] = false;
+			visited[i][j] = 0;
 		}
 	}
 	
@@ -64,7 +64,7 @@ void solve(const string& FEN) {
 				case 'k':
 				case 'K':
 					board[row][col] = KING;
-					visited[i][j] = true;
+					visited[row][col] = 8;
 					
 					for (ll dir=0; dir<8; dir++) {
 						ll y = row + k_dy[dir];
@@ -78,12 +78,37 @@ void solve(const string& FEN) {
 				case 'q':
 				case 'Q':
 					board[row][col] = QUEEN;
-					visited[i][j] = true;
+					visited[row][col] = 8;
+					
+					for (ll diff = -7; diff <= 7; diff++) {
+						ll y = row + diff;
+						ll x1 = col + diff;
+						ll x2 = col - diff;
+						
+						if (IsInRange(x1, y) && visited[y][x1] == 0) {
+							visited[y][x1] = 8;
+						}
+						
+						if (IsInRange(x2, y) && visited[y][x2] == 0) {
+							visited[y][x2] = 8;
+						}
+					}
+					
+					for (ll diff = -7; diff <= 7; diff++) {
+						if (IsInRange(row + diff, col) && visited[row + diff][col] == 0) {
+							visited[row + diff][col] = 8;
+						}
+						
+						if (IsInRange(row, col + diff) && visited[row][col + diff] == 0) {
+							visited[row][col + diff] = 8;
+						}
+					}
+					
 					break;
 				case 'b':
 				case 'B':
 					board[row][col] = BISHOP;
-					visited[i][j] = true;
+					visited[row][col] = 8;
 					
 					for (ll diff = -7; diff <= 7; diff++) {
 						ll y = row + diff;
@@ -103,7 +128,7 @@ void solve(const string& FEN) {
 				case 'n':
 				case 'N':
 					board[row][col] = KNIGHT;
-					visited[i][j] = true;
+					visited[row][col] = 8;
 					
 					for (ll dir=0; dir<8; dir++) {
 						ll y = row + n_dy[dir];
@@ -117,18 +142,44 @@ void solve(const string& FEN) {
 				case 'r':
 				case 'R':
 					board[row][col] = ROOK;
-					visited[i][j] = true;
+					visited[row][col] = 8;
 					
-					// WIP
+					for (ll diff = -7; diff <= 7; diff++) {
+						if (IsInRange(row + diff, col) && visited[row + diff][col] == 0) {
+							visited[row + diff][col] = 8;
+						}
+						
+						if (IsInRange(row, col + diff) && visited[row][col + diff] == 0) {
+							visited[row][col + diff] = 8;
+						}
+					}
 					
 					break;
 				case 'p':
 					board[row][col] = PAWN_BLACK;
-					visited[i][j] = true;
+					visited[row][col] = 8;
+					
+					if (IsInRange(col - 1, row + 1) && visited[row + 1][col - 1] == 0) {
+						visited[row + 1][col - 1] = 8;
+					}
+					
+					if (IsInRange(col + 1, row + 1) && visited[row + 1][col + 1] == 0) {
+						visited[row + 1][col + 1] = 8;
+					}
+					
 					break;
 				case 'P':
 					board[row][col] = PAWN_WHITE;
-					visited[i][j] = true;
+					visited[row][col] = 8;
+										
+					if (IsInRange(col - 1, row - 1) && visited[row - 1][col - 1] == 0) {
+						visited[row - 1][col - 1] = 8;
+					}
+					
+					if (IsInRange(col + 1, row - 1) && visited[row - 1][col + 1] == 0) {
+						visited[row - 1][col + 1] = 8;
+					}
+					
 					break;
 				default:
 					col += (static_cast<ll>(c) - '1');
@@ -138,12 +189,20 @@ void solve(const string& FEN) {
 		row++;
 	}
 	
+	ll result = 0;
+	
 	for (ll i=0; i<8; i++) {
 		for (ll j=0; j<8; j++) {
-			cout << board[i][j] << ' ';
+			cout << visited[i][j] << ' ';
+			if (visited[i][j] != 0) {
+				result++;
+			}
 		}
 		cout << '\n';
 	}
+	
+	result = 64 - result;
+	cout << result << '\n';
 }
 
 bool IsInRange(ll x, ll y) {
