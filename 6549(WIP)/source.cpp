@@ -1,5 +1,4 @@
 #include <bits/extc++.h>
-#include "segment_tree.hpp"
 
 using namespace __gnu_pbds;
 using namespace std;
@@ -10,40 +9,95 @@ using ull = unsigned long long int;
 using ld = long double;
 using pll = pair<ll, ll>;
 
+using vpll = vector<pll>;
+
+// Rectangle information is stored by pll
+// first is height, second is width
+
+ll area(const pll& a) {
+	return a.first * a.second;
+}
+
 pll operator+(const pll& a, const pll& b) {
 	pll result;
-
+	
 	result.first = min(a.first, b.first);
 	result.second = a.second + b.second;
 	
 	return result;
 }
 
-struct MyMonoid {
-	pll prefix_sum;
-	pll suffix_sum;
-	pll total_sum;
-	pll maximum_sum;
-	
-	bool identity;
-	
-	MyMonoid(ll height=1, bool identity=true)
-		: prefix_sum({height, 1}), suffix_sum({height, 1}), 
-		total_sum({height, 1}), maximum_sum({height, 1}),
-		identity(identity)
-	{
-		if (identity && height != 1) {
-			identity = false;
+vpll operator+(const vpll& a, const vpll& b) {
+	vpll result;
+
+	for (auto& A: a) {
+		for (auto& B: b) {
+			pll AB = A+B;
+			ll prod_AB = area(AB);
+			
+			if (result.empty()) {
+				if (prod_AB > 0) {
+					result.emplace_back(AB);
+				}
+			}
+			else {
+				ll prod_result = area(result[0]);
+
+				if (prod_result < prod_AB) {
+					result = {AB};
+				}
+				else if (prod_result == prod_AB) {
+					result.emplace_back(AB);
+				}
+			}
 		}
 	}
 	
+	return result;
+}
+
+vpll max(const vpll& a, const vpll& b) {
+	if (a.empty()) {
+		return b;
+	}
+	else if (b.empty()) {
+		return a;
+	}
+	
+	ll prod_a = area(a[0]);
+	ll prod_b = area(b[0]);
+
+	vpll concat = a;
+	concat.insert(concat.end(), b.begin(), b.end());
+
+	if (prod_a > prod_b) {
+		return a;
+	}
+	else if (prod_a < prod_b) {
+		return b;
+	}
+	else {
+		return concat;
+	}
+}
+
+struct MyMonoid {
+	vpll prefix_sums;
+	vpll suffix_sums;
+	vpll total_sum;
+	vpll maximum_sums;
+	
+	MyMonoid(ll height=0)
+		: prefix_sums({make_pair(height, 1LL)}), 
+		suffix_sums({make_pair(height, 1LL)}), 
+		total_sum({make_pair(height, 1LL)}), 
+		maximum_sums({make_pair(height, 1LL)}) {}
+	
 	MyMonoid& operator=(const MyMonoid& other) {
-		this->prefix_sum = other.prefix_sum;
-		this->suffix_sum = other.suffix_sum;
+		this->prefix_sums = other.prefix_sums;
+		this->suffix_sums = other.suffix_sums;
 		this->total_sum = other.total_sum;
-		this->maximum_sum = other.maximum_sum;
-		
-		this->identity = other.identity;
+		this->maximum_sums = other.maximum_sums;
 		
 		return *this;
 	}
@@ -51,39 +105,17 @@ struct MyMonoid {
 	MyMonoid operator*(const MyMonoid& other) const {
 		MyMonoid result;
 		
-		if (this->identity) {
-			if (!other.identity) {
-				result = other;
-			}
-		}
-		else if (other.identity) {
-			result = *this;
-		}
-		else {
-			result.prefix_sum = max(this->prefix_sum, this->total_sum + other.prefix_sum);
-			result.suffix_sum = max(this->suffix_sum + other.total_sum, other.suffix_sum);
-			result.total_sum = this->total_sum + other.total_sum;
-			result.maximum_sum = max(
-				max(this->maximum_sum, other.maximum_sum), 
-				max(max(result.prefix_sum, result.suffix_sum), 
-					max(result.total_sum, this->suffix_sum + other.prefix_sum)
-				   )
-			);
-		}
+		result.prefix_sums = max(this->prefix_sums, this->total_sum + other.prefix_sums);
+		result.suffix_sums = max(this->suffix_sums + other.total_sum, other.suffix_sums);
+		result.total_sum = this->total_sum + other.total_sum;
+		result.maximum_sums = max(
+			max(this->maximum_sums, other.maximum_sums), 
+			max(max(result.prefix_sums, result.suffix_sums), 
+				max(result.total_sum, this->suffix_sums + other.prefix_sums)
+			   )
+		);
 		
 		return result;
-	}
-	
-	pll max(const pll& a, const pll& b) const {
-		ll prod_a = a.first * a.second;
-		ll prod_b = b.first * b.second;
-		
-		if (prod_a > prod_b) {
-			return a;
-		}
-		else {
-			return b;
-		}
 	}
 };
 
@@ -111,27 +143,42 @@ bool solve(void) {
 		ll h;
 		cin >> h;
 		
-		arr[i] = MyMonoid(h, false);
+		arr[i] = MyMonoid(h);
 	}
 	
-	cout << (make_pair(1, 2) + make_pair(4, 1)).second << '\n';
+	MyMonoid total = arr[0];
 	
-	MyMonoid total;
-	for (ll i=0; i<n; i++) {
+	for (ll i=1; i<n; i++) {
 		total = total * arr[i];
 		
-		cout << "Prefix sum: height is " << total.prefix_sum.first << ", count is " << total.prefix_sum.second << ": " << total.prefix_sum.first * total.prefix_sum.second << '\n';
-		cout << "Suffix sum: height is " << total.suffix_sum.first << ", count is " << total.suffix_sum.second << ": " << total.suffix_sum.first * total.suffix_sum.second << '\n';
-		cout << "Total sum: height is " << total.total_sum.first << ", count is " << total.total_sum.second << ": " << total.total_sum.first * total.total_sum.second << '\n';
-		cout << "Maximum sum: height is " << total.maximum_sum.first << ", count is " << total.maximum_sum.second << ": " << total.maximum_sum.first * total.maximum_sum.second << '\n';
+		// cout << "Prefix sums: ";
+		// for (auto& ps: total.prefix_sums) {
+		// 	cout << '(' << ps.first << ", " << ps.second << ") ";
+		// }
+		// cout << '\n';
 		
-		cout << '\n';
+		// cout << "Suffix sums: ";
+		// for (auto& ss: total.suffix_sums) {
+		// 	cout << '(' << ss.first << ", " << ss.second << ") ";
+		// }
+		// cout << '\n';
+		
+		// cout << "Total sum: ";
+		// for (auto& ts: total.total_sum) {
+		// 	cout << '(' << ts.first << ", " << ts.second << ") ";
+		// }
+		// cout << '\n';
+		
+		// cout << "Maximum sums: ";
+		// for (auto& ms: total.maximum_sums) {
+		// 	cout << '(' << ms.first << ", " << ms.second << ") ";
+		// }
+		// cout << '\n';
+		
+		// cout << '\n';
 	}
 	
-	// SegmentTree segtree(arr);
-	// auto result = segtree.query(0, n-1);
-	
-	// cout << (result.maximum_sum.first * result.maximum_sum.second) << '\n';
+	cout << area(total.maximum_sums[0]) << '\n';
 	
 	return true;
 }
