@@ -8,11 +8,11 @@ fn main() {
     stdin().read_line(&mut input).unwrap();
 
 	// Single input
-    // let a = input.trim().parse::<usize>().unwrap();
+    // let a = input.trim().parse::<i64>().unwrap();
 	
 	// Multiple input
 	
-	// let mut input = input.split_ascii_whitespace().flat_map(str::parse::<usize>);
+	// let mut input = input.split_ascii_whitespace().flat_map(str::parse::<i64>);
 
     // let a = input.next().unwrap();
     // let b = input.next().unwrap();
